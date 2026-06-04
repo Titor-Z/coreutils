@@ -35,18 +35,15 @@ jobs:
           compression-level: 0
 
       - name: Install Inno Setup
-        run: winget install -e --id JRSoftware.InnoSetup --silent --accept-package-agreements
+        shell: pwsh
+        run: choco install innosetup --no-progress --yes 2>&1 | Out-Null
 
       - name: Build installer
+        shell: pwsh
         run: |
           $ver = Select-String -Path Cargo.toml -Pattern '^version\s*=\s*"([^"]+)"' `
             | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }
-          $iscc = if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
-            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          } else {
-            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
-          }
-          & $iscc `
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" `
             /DAppVersion=$ver `
             /DArchitecturesAllowed=x64os `
             /DSource=$pwd\target\release\coreutils.exe `

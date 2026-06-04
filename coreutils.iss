@@ -3,19 +3,18 @@
 #endif
 
 [Setup]
-AppId={{84814416-E113-451B-B34C-95A3B4A259A1}
-AppName=Coreutils for Windows
+AppId={{B8A3F5E2-1C4D-4E7F-9A6B-3D2C5F8E1A0B}
+AppName=Coreutils (Titor-Z fork)
 DefaultGroupName=Coreutils for Windows
 AppVersion={#AppVersion}
-AppPublisher=Microsoft Corporation
-AppPublisherURL=https://github.com/microsoft/coreutils
-AppSupportURL=https://github.com/microsoft/coreutils
-AppUpdatesURL=https://github.com/microsoft/coreutils
-SetupMutex=coreutils-windows-setup
+AppPublisher=Z.To
+AppPublisherURL=https://github.com/Titor-Z/coreutils
+AppSupportURL=https://github.com/Titor-Z/coreutils
+AppUpdatesURL=https://github.com/Titor-Z/coreutils
+SetupMutex=coreutils-windows-setup-Titor-Z
 DefaultDirName={autopf}\coreutils
 DisableDirPage=yes
 DisableProgramGroupPage=yes
-SetupIconFile=src\coreutils.ico
 UninstallDisplayIcon={app}\coreutils.exe
 MinVersion=10.0
 ArchitecturesAllowed={#ArchitecturesAllowed}
@@ -24,7 +23,8 @@ PrivilegesRequired=admin
 ChangesEnvironment=yes
 SolidCompression=yes
 WizardStyle=modern dynamic
-OutputBaseFilename=coreutils
+SetupIconFile=src\coreutils.ico
+OutputBaseFilename=coreutils-Titor-Z
 
 #ifdef SignedUninstallerDir
 SignedUninstaller=yes
