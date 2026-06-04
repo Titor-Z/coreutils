@@ -1088,7 +1088,7 @@ pub fn uumain(raw_args: impl Iterator<Item = OsString>) -> i32 {
     let mut reverse = false;
     let mut max_lines = usize::MAX;
 
-    let mut i = 0;
+    let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
             "-n" => {
