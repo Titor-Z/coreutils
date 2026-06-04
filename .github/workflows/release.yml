@@ -7,6 +7,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUSTC_BOOTSTRAP: 1
+  RUSTFLAGS: "--cap-lints warn"
 
 jobs:
   release:
@@ -25,11 +26,19 @@ jobs:
       - name: Build release
         run: cargo build --release
 
+      - name: Install Inno Setup
+        run: winget install -e --id JRSoftware.InnoSetup --silent --accept-package-agreements
+
       - name: Build installer
         run: |
           $ver = Select-String -Path Cargo.toml -Pattern '^version\s*=\s*"([^"]+)"' `
-            | ForEach-Object { $_.Matches.Groups[1].Value }
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }
+          $iscc = if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          } else {
+            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+          }
+          & $iscc `
             /DAppVersion=$ver `
             /DArchitecturesAllowed=x64os `
             /DSource=$pwd\target\release\coreutils.exe `
