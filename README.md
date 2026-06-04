@@ -1,40 +1,105 @@
-<h1 align="center">Coreutils for Windows</h1>
+<h1 align="center">coreutils (Windows 增强版)</h1>
 
-<p align="center">UNIX-style core utilities for Windows. The same commands and pipelines you use on Linux, macOS, and WSL - natively.</p>
+<p align="center">UNIX 风格命令工具集，原生 Windows 可执行文件。</p>
 
 <h3 align="center">
-  <a href="#install">Install</a>
+  <a href="#usage">Usage</a>
   <span> · </span>
-  <a href="#shell-conflicts">Shell conflicts</a>
+  <a href="#added-commands">Added commands</a>
+  <span> · </span>
+  <a href="#build">Build</a>
   <span> · </span>
   <a href="#windows-caveats">Windows caveats</a>
-  <span> · </span>
-  <a href="#contributing">Contributing</a>
 </h3>
 
 ---
 
-A Microsoft-maintained build of [uutils/coreutils](https://github.com/uutils/coreutils),
-[findutils](https://github.com/uutils/findutils), [grep](https://github.com/uutils/grep),
-and [sed](https://github.com/uutils/sed) packaged as a single multi-call binary for Windows. The goal is to make moving between Linux, macOS, WSL,
-containers, and Windows frictionless: the same commands, flags, and pipelines work the same
-way, so existing scripts carry over without translation.
+Fork of [microsoft/coreutils](https://github.com/microsoft/coreutils) 基础上扩展，
+集成了 [uutils/coreutils](https://github.com/uutils/coreutils)、
+[findutils](https://github.com/uutils/findutils)、[grep](https://github.com/uutils/grep)、
+[sed](https://github.com/uutils/sed)、[diffutils](https://github.com/uutils/diffutils)、
+以及 [tar](https://github.com/uutils/tar)，打包成一个多调用二进制文件。在 Windows 上原生运行，
+无需 WSL / Cygwin / MSYS2。
 
-Each command supports the standard `--help` flag for full syntax and options.
+共 **84 个命令**，覆盖日常 Linux 命令行的绝大部分需求。
 
-**This project is in preview.**
+**自用 fork，不提供官方安装包。**
 
 <br/>
 
-## Install
+## Usage
 
-Install Coreutils for Windows with WinGet:
-
-```powershell
-winget install Microsoft.Coreutils
+```bash
+coreutils.exe <command> [args...]    # 直接使用
+coreutils.exe --list                  # 列出所有可用命令
 ```
 
-Or grab the latest build from our [Release Page](https://github.com/microsoft/coreutils/releases/latest).
+创建硬链接后可以直接当独立命令使用：
+
+```bash
+# 在 target\debug\ 目录下创建硬链接
+New-Item -ItemType HardLink -Path "sed.exe" -Target "coreutils.exe"
+New-Item -ItemType HardLink -Path "diff.exe" -Target "coreutils.exe"
+New-Item -ItemType HardLink -Path "tar.exe" -Target "coreutils.exe"
+New-Item -ItemType HardLink -Path "dfree.exe" -Target "coreutils.exe"
+```
+
+<br/>
+
+## Added commands
+
+该 fork 在 Microsoft 原版 72 个命令的基础上增加了以下命令：
+
+| Command | Source | Description |
+| ------- | ------ | ----------- |
+| `sed` | [uutils/sed](https://github.com/uutils/sed) | 流编辑器，支持 `s/pattern/replace/`、`-n`、`/address/` 等标准功能 |
+| `diff` | [uutils/diffutils](https://github.com/uutils/diffutils) | 文件差异比较，支持 unified diff (`-u`) |
+| `cmp` | [uutils/diffutils](https://github.com/uutils/diffutils) | 字节级文件比较 |
+| `tar` | [uutils/tar](https://github.com/uutils/tar) | 归档工具，支持 create / list / extract |
+| `dfree` | 自定义 | 实时内存 & 磁盘使用率监控，3 秒刷新，彩色进度条显示 |
+
+### dfree
+
+实时显示物理内存、虚拟内存（Swap）和各硬盘分区的使用情况：
+
+```
+ ┌─────────────────────────────────────────────┐
+ │            dfree v1  内存 & 磁盘监控            │
+ └─────────────────────────────────────────────┘
+
+  Memory  ███████████████████░░░░░  2.9 GiB / 3.9 GiB  74.5%
+  Swap    ████████████████░░░░░░░░  7.0 GiB / 10.7 GiB  65.6%
+
+  ── Disks ──────────────────────────────────
+  C: █████████████░░░░░░░░░░░░  61.1 GiB / 118.3 GiB  51.7%
+  D: ██████░░░░░░░░░░░░░░░░░░░  60.0 GiB / 200.0 GiB  30.0%
+
+ ──────────────────────────────────────────────────
+  Refresh: 3s   Ctrl+C to exit
+```
+
+```bash
+coreutils.exe dfree          # 默认 3 秒刷新
+coreutils.exe dfree -n 5     # 5 秒刷新
+dfree.exe                    # 硬链接后直接跑
+```
+
+<br/>
+
+## Build
+
+需要 Rust 工具链（nightly）和 MinGW-w64 GCC（用于编译 `sort` 命令的 C 代码）。
+
+```powershell
+# 子模块初始化（coreutils、findutils、grep、sed）
+git submodule update --init --recursive
+
+# 编译（需要 RUSTC_BOOTSTRAP=1 环境变量）
+$env:RUSTC_BOOTSTRAP=1
+cargo build --release
+```
+
+编译产物在 `target/release/coreutils.exe`。
 
 <br/>
 
@@ -70,7 +135,9 @@ Legend: ✅ ships and works · ⚠️ ships but conflicts with a built-in · �
 | `rm`       |  ✅  |       ⚠️        | |
 | `rmdir`    |  ⚠️  |       ⚠️        | |
 | `sleep`    |  ✅  |       ⚠️        | |
+| `sed`      |  ✅  |       ⚠️        | |
 | `sort`     |  ✅  |       ✅        | Integrated port of the original DOS command |
+| `tar`      |  ✅  |       ✅        | |
 | `tee`      |  ✅  |       ⚠️        | |
 | `timeout`  |  🛑  |       🛑        | Relies on `kill`'s functionality |
 | `uptime`   |  ✅  |       ⚠️        | |
@@ -101,18 +168,33 @@ There are two shortcomings, however:
 * `Get-Command ls`, `Get-Help ls`, etc., will still show `ls`, etc., as builtin commands<br>
   Due to limitations around `PSNativeCommandPreserveBytePipe` we cannot integrate ourselves in a more robust way with PowerShell.
 
-### Intentionally dropped
+### Not shipped
 
-Commands that exist upstream but aren't shipped here because they rely on POSIX-only concepts, would break existing Windows scripts, or simply aren't useful on Windows.
+Commands available in source but not compiled:
 
-* `dd`: Perhaps useful in the future.
-* `dircolors`, `shred`, `sync`, `uname`: Not particularly useful on Windows.
-* `chcon`, `chgrp`, `chmod`, `chown`, `chroot`, `groups`, `hostid`, `id`, `install`,
-  `logname`, `mkfifo`, `mknod`, `nice`, `nohup`, `pathchk`, `pinky`, `runcon`, `stdbuf`,
-  `stty`, `tty`, `users`, `who`: POSIX-only concepts unavailable on Windows.
+| Command | Reason |
+| ------- | ------ |
+| `dd`, `shred`, `dircolors`, `sync`, `uname` | Limited usefulness on Windows |
+| `chcon`, `chgrp`, `chmod`, `chown`, `chroot`, `groups` | POSIX permission concepts unavailable |
+| `hostid`, `id`, `logname`, `pinky`, `who`, `users` | POSIX user/group concepts |
+| `install` | Requires POSIX permission bits |
+| `kill`, `nice`, `nohup`, `stdbuf` | No POSIX signals on Windows |
+| `mkfifo`, `mknod` | Device/node concepts unavailable |
+| `more`, `expand` | Conflict with built-in DOS commands |
+| `runcon`, `stty`, `tty`, `pathchk` | POSIX-only terminal / path concepts |
 
 <br/>
 
-## Contributing
+## License
 
-Bug reports and pull requests are welcome. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for details on the repo layout and how changes flow between this repo and the upstream uutils projects.
+该项目基于以下组件的上游仓库，均为宽松许可证：
+
+| Component | License |
+| --------- | ------- |
+| [microsoft/coreutils](https://github.com/microsoft/coreutils) | MIT |
+| [uutils/coreutils](https://github.com/uutils/coreutils) | MIT |
+| [uutils/findutils](https://github.com/uutils/findutils) | MIT |
+| [uutils/grep](https://github.com/uutils/grep) | MIT |
+| [uutils/sed](https://github.com/uutils/sed) | MIT |
+| [uutils/diffutils](https://github.com/uutils/diffutils) | MIT / Apache-2.0 |
+| [uutils/tar](https://github.com/uutils/tar) | MIT |
