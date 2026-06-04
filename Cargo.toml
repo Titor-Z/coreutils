@@ -135,12 +135,15 @@ diffutils = { package = "diffutils", path = "deps/diffutils" }
 # uutils/tar
 tar = { package = "uu_tar", path = "deps/tar/src/uu/tar" }
 
-# For registry access in main.rs
+# For nthelpers, dfree, etc.
 [dependencies.windows-sys]
 version = "*"
+default-features = false
 features = [
     "Win32_System_Console",
     "Win32_System_Registry",
+    "Win32_System_Environment",
+    "Win32_Globalization",
 ]
 
 [build-dependencies]
