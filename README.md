@@ -21,7 +21,7 @@ Fork of [microsoft/coreutils](https://github.com/microsoft/coreutils) 基础上�
 以及 [tar](https://github.com/uutils/tar)，打包成一个多调用二进制文件。在 Windows 上原生运行，
 无需 WSL / Cygwin / MSYS2。
 
-共 **84 个命令**，覆盖日常 Linux 命令行的绝大部分需求。
+共 **85 个命令**，覆盖日常 Linux 命令行的绝大部分需求。
 
 **自用 fork，不提供官方安装包。**
 
@@ -57,6 +57,7 @@ New-Item -ItemType HardLink -Path "dfree.exe" -Target "coreutils.exe"
 | `cmp` | [uutils/diffutils](https://github.com/uutils/diffutils) | 字节级文件比较 |
 | `tar` | [uutils/tar](https://github.com/uutils/tar) | 归档工具，支持 create / list / extract |
 | `dfree` | 自定义 | 实时内存 & 磁盘使用率监控，3 秒刷新，彩色进度条显示 |
+| `winfo` | 自定义 | 系统信息显示，类似 neofetch，显示 OS、内核、运行时间、Shell、CPU、内存、磁盘 |
 
 ### dfree
 

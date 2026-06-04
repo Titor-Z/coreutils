@@ -84,6 +84,7 @@ fn generate_uutils_map() {
     }
 
     entries.push(("dfree".into(), "(dfree_uumain, dfree_uu_app)".into()));
+    entries.push(("winfo".into(), "(winfo_uumain, winfo_uu_app)".into()));
 
     entries.sort();
 
