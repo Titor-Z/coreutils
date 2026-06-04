@@ -126,6 +126,15 @@ findutils = { package = "findutils", path = "deps/findutils" }
 grep = { package = "uu_grep", path = "deps/grep" }
 ntfind = { package = "find", path = "deps/ntfind" }
 
+# uutils/sed
+sed = { package = "sed", path = "deps/sed" }
+
+# uutils/diffutils
+diffutils = { package = "diffutils", path = "deps/diffutils" }
+
+# uutils/tar
+tar = { package = "uu_tar", path = "deps/tar/src/uu/tar" }
+
 # For registry access in main.rs
 [dependencies.windows-sys]
 version = "*"

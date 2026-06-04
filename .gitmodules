@@ -7,3 +7,12 @@
 [submodule "deps/grep"]
 	path = deps/grep
 	url = https://github.com/uutils/grep.git
+[submodule "deps/sed"]
+	path = deps/sed
+	url = https://github.com/uutils/sed.git
+[submodule "deps/tar"]
+	path = deps/tar
+	url = https://github.com/uutils/tar.git
+[submodule "deps/diffutils"]
+	path = deps/diffutils
+	url = https://github.com/uutils/diffutils.git

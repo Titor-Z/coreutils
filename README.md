@@ -15,8 +15,8 @@
 ---
 
 A Microsoft-maintained build of [uutils/coreutils](https://github.com/uutils/coreutils),
-[findutils](https://github.com/uutils/findutils), and [grep](https://github.com/uutils/grep) packaged as a
-single multi-call binary for Windows. The goal is to make moving between Linux, macOS, WSL,
+[findutils](https://github.com/uutils/findutils), [grep](https://github.com/uutils/grep),
+and [sed](https://github.com/uutils/sed) packaged as a single multi-call binary for Windows. The goal is to make moving between Linux, macOS, WSL,
 containers, and Windows frictionless: the same commands, flags, and pipelines work the same
 way, so existing scripts carry over without translation.
 

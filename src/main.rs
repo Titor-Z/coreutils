@@ -5,6 +5,7 @@
 // Microsoft-authored changes, which Microsoft makes available to uutils
 // under the uutils MIT License for upstream incorporation. See NOTICE.md.
 
+mod dfree;
 mod nthelpers;
 
 use std::borrow::Cow;
@@ -319,4 +320,45 @@ fn sort_uumain<T: Args>(args: T) -> i32 {
 
 fn sort_uu_app() -> Command {
     sort::uu_app()
+}
+
+fn sed_uumain<T: Args>(args: T) -> i32 {
+    sed::sed::uumain(args.into_iter())
+}
+
+fn sed_uu_app() -> Command {
+    unreachable!()
+}
+
+fn diff_uumain<T: Args>(args: T) -> i32 {
+    diffutils::diff::main(args.collect::<Vec<_>>().into_iter().peekable())
+}
+
+fn diff_uu_app() -> Command {
+    unreachable!()
+}
+
+fn cmp_uumain<T: Args>(args: T) -> i32 {
+    diffutils::cmp::main(args.collect::<Vec<_>>().into_iter().peekable())
+}
+
+fn cmp_uu_app() -> Command {
+    unreachable!()
+}
+
+fn tar_uumain<T: Args>(args: T) -> i32 {
+    tar::uumain(args)
+}
+
+fn tar_uu_app() -> Command {
+    tar::uu_app()
+}
+
+fn dfree_uumain<T: Args>(args: T) -> i32 {
+    dfree::uumain(args.into_iter())
+}
+
+fn dfree_uu_app() -> Command {
+    dfree::uumain([OsString::from("dfree"), OsString::from("--help")].into_iter());
+    unreachable!()
 }

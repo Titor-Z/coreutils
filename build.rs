@@ -22,6 +22,9 @@ fn generate_uutils_map() {
     let mut entries = Vec::new();
     let mut has_findutils = false;
     let mut has_sort = false;
+    let mut has_sed = false;
+    let mut has_diffutils = false;
+    let mut has_tar = false;
 
     for line in manifest.lines() {
         let Some(caps) = re.captures(line) else {
@@ -34,6 +37,12 @@ fn generate_uutils_map() {
             has_findutils = true;
         } else if package == "uu_sort" {
             has_sort = true;
+        } else if package == "sed" {
+            has_sed = true;
+        } else if package == "diffutils" {
+            has_diffutils = true;
+        } else if package == "uu_tar" {
+            has_tar = true;
         } else if let Some(util) = package.strip_prefix("uu_") {
             coreutils.push((util.to_string(), key.to_string()));
         }
@@ -61,6 +70,21 @@ fn generate_uutils_map() {
         entries.push(("sort".into(), "(sort_uumain, sort_uu_app)".into()));
     }
 
+    if has_sed {
+        entries.push(("sed".into(), "(sed_uumain, sed_uu_app)".into()));
+    }
+
+    if has_diffutils {
+        entries.push(("cmp".into(), "(cmp_uumain, cmp_uu_app)".into()));
+        entries.push(("diff".into(), "(diff_uumain, diff_uu_app)".into()));
+    }
+
+    if has_tar {
+        entries.push(("tar".into(), "(tar_uumain, tar_uu_app)".into()));
+    }
+
+    entries.push(("dfree".into(), "(dfree_uumain, dfree_uu_app)".into()));
+
     entries.sort();
 
     let mut phf_map = phf_codegen::OrderedMap::new();
@@ -87,15 +111,31 @@ fn util_map<T: Args>() -> UtilityMap<T> {{
 
 fn compile_ntsort() {
     println!("cargo::rerun-if-changed=deps/ntsort/sort.c");
+    println!("cargo::rerun-if-changed=deps/ntsort/sal_compat.h");
 
-    cc::Build::new()
+    let target = env::var("TARGET").unwrap_or_default();
+    let is_msvc = target.contains("msvc");
+
+    let mut build = cc::Build::new();
+    build
         .file("deps/ntsort/sort.c")
         .define("NDEBUG", "1")
-        .define("UNICODE", "1")
-        .define("_UNICODE", "1")
         .define("WIN32_LEAN_AND_MEAN", "1")
-        .include("deps/ntsort")
-        .compile("ntsort");
+        .include("deps/ntsort");
+
+    if is_msvc {
+        build.define("UNICODE", "1");
+        build.define("_UNICODE", "1");
+    } else {
+        // GCC/MinGW doesn't understand MSVC SAL annotations
+        build.flag("-include").flag("sal_compat.h");
+        // sort.c uses int where Win32 APIs expect DWORD; MSVC is lenient, GCC is strict
+        build.flag("-Wno-incompatible-pointer-types");
+        // GetTempPath2 is redefined to GetTempPathA since TCHAR=char without UNICODE
+        build.define("GetTempPath2(cch,path)", "GetTempPathA(cch,path)");
+    }
+
+    build.compile("ntsort");
 }
 
 fn compile_manifest() {
