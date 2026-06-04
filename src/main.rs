@@ -7,6 +7,7 @@
 
 mod dfree;
 mod nthelpers;
+mod wtop;
 mod winfo;
 
 use std::borrow::Cow;
@@ -370,5 +371,14 @@ fn winfo_uumain<T: Args>(args: T) -> i32 {
 
 fn winfo_uu_app() -> Command {
     winfo::uumain([OsString::from("winfo"), OsString::from("--help")].into_iter());
+    unreachable!()
+}
+
+fn wtop_uumain<T: Args>(args: T) -> i32 {
+    wtop::uumain(args.into_iter())
+}
+
+fn wtop_uu_app() -> Command {
+    wtop::uumain([OsString::from("wtop"), OsString::from("--help")].into_iter());
     unreachable!()
 }

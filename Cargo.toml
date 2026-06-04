@@ -135,6 +135,9 @@ diffutils = { package = "diffutils", path = "deps/diffutils" }
 # uutils/tar
 tar = { package = "uu_tar", path = "deps/tar/src/uu/tar" }
 
+# Custom: wtop (Windows process monitor TUI)
+ratatui = "0.29"
+
 # For nthelpers, dfree, etc.
 [dependencies.windows-sys]
 version = "*"
