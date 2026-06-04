@@ -7,11 +7,10 @@ type HKEY = usize;
 type LPCWSTR = *const u16;
 
 const HKEY_LOCAL_MACHINE: HKEY = 0x8000_0002usize;
-const KEY_READ: DWORD = 0x20019;
 const RRF_RT_REG_SZ: DWORD = 0x0000_0002;
-const RRF_RT_DWORD: DWORD = 0x0000_0010;
 const ERROR_SUCCESS: LSTATUS = 0;
 
+#[allow(non_snake_case)]
 #[repr(C)]
 struct RTL_OSVERSIONINFOW {
     dwOSVersionInfoSize: DWORD,
@@ -22,6 +21,7 @@ struct RTL_OSVERSIONINFOW {
     szCSDVersion: [u16; 128],
 }
 
+#[allow(non_snake_case)]
 #[repr(C)]
 struct MEMORYSTATUSEX {
     dwLength: DWORD,
