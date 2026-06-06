@@ -1,0 +1,199 @@
+# =============================================================================
+#  dfree 配置文件
+#  修改此文件后重启程序即可生效。不提供此文件时使用内置默认值。
+#  所有颜色值均使用 #rrggbb 十六进制格式。
+# =============================================================================
+
+# =============================================================================
+#  调色板 — 莫兰迪低饱和色系
+#  你可以在此更换所有 UI 元素的颜色。
+# =============================================================================
+[palette]
+
+# ---- 背景 ----
+popup_bg = "#2d2d2d"           # 弹窗背景色（深暖灰）
+popup_border = "#4a4a4a"       # 弹窗边框色（中灰）
+
+# ---- 文字 ----
+text_primary = "#d1d1c6"       # 主文字（米白）
+text_secondary = "#8e8e84"     # 辅助文字（灰绿）
+text_highlight = "#ffffff"     # 强调文字（纯白，用于数值和标题）
+
+# ---- 系统信息栏标签 ----
+label_cpu = "#b5a89a"          # CPU: 标签（暖驼）
+label_memory = "#a8b5a0"       # Memory: 标签（鼠尾草绿）
+label_swap = "#b59aa0"         # Swap: 标签（灰粉）
+label_disk_io = "#9aa8b5"      # Disk I/O: 标签（雾霾蓝）
+label_total = "#8e8e84"        # Total: 标签（灰绿）
+
+# ---- 快捷键按钮 ----
+key_binding = "#b59a7a"        # 快捷键按键（如 [Enter], [q]）
+key_desc = "#8e8e84"           # 快捷键说明文字
+
+# ---- 存储分类（分析弹窗） ----
+cat_documents = "#9aa8b5"      # 文档 — 雾霾蓝
+cat_pictures = "#b5a89a"       # 图片 — 暖驼
+cat_audio = "#b59aa0"          # 音频 — 灰粉
+cat_video = "#a8b5a0"          # 视频 — 鼠尾草绿
+cat_other = "#a0b5a8"          # 其他 — 浅海绿
+cat_applications = "#8ea8b5"   # 应用 — 石板蓝
+cat_system = "#b5a0a0"         # 系统 — 灰褐
+cat_cache = "#b5a88a"          # 缓存 — 沙色
+
+# ---- 仪表盘颜色 ----
+gauge_done = "#8fa88f"         # 扫描完成（柔绿）
+gauge_scanning = "#8f9fa8"     # 扫描中（柔青）
+gauge_ok = "#8aa88a"           # 正常使用率 < 70%（绿）
+gauge_warn = "#b59a7a"         # 警告使用率 70%~90%（琥珀）
+gauge_danger = "#b5807a"       # 危险使用率 >= 90%（红褐）
+
+# ---- 表格 ----
+table_header = "#8e8e84"       # 表头文字
+table_row = "#d1d1c6"          # 行文字
+table_selected_bg = "#3a3a4a"  # 选中行背景
+
+# ---- 窗口标题 ----
+title_text = "#d1d1c6"         # 标题文字
+title_border = "#4a4a4a"       # 窗口边框
+
+# =============================================================================
+#  间距配置 — 按组件划分
+#  所有数值单位为"字符数"（终端一个字符的宽度）。
+# =============================================================================
+[spacing.components]
+
+# ---- 窗口标题 ----
+[spacing.components.title]
+left = 1                       # 标题左侧填充空格数
+right = 1                      # 标题右侧填充空格数
+
+# ---- 系统信息栏（CPU / Memory / Swap / Disk I/O） ----
+[spacing.components.sys_header]
+label_value_gap = 1            # 标签和数值之间的空格，如 "CPU:" 和 "12.5%" 之间
+item_gap = 2                   # 不同指标组之间的空格
+line_gap = 0                   # 两行系统信息之间的空行数
+separator = "  │  "            # 组与组之间的分隔符
+
+# ---- 磁盘列表 ----
+[spacing.components.volume_table]
+header_prefix = 1              # " Volumes" 前面的空格
+row_prefix = 1                 # 每行文字前的空格
+row_gap = 0                    # 行与行之间的空行
+
+# ---- 底部快捷键栏 ----
+[spacing.components.footer]
+prefix = 1                     # 底部栏左端空格
+key_desc_gap = 1               # 快捷键和说明之间的空格，如 "[↑↓] 选择"
+group_gap = 2                  # 不同快捷键组之间的空格
+
+# ---- 弹窗通用 ----
+[spacing.components.popup]
+title_padding_x = 1            # 弹窗标题左右两端空格
+content_left = 1               # 弹窗内容左侧空格
+content_right = 1              # 弹窗内容右侧空格
+content_top = 0                # 弹窗内容顶部空行
+content_bottom = 0             # 弹窗内容底部空行
+footer_gap_top = 1             # 底部帮助文字上方的空行
+
+# ---- 分析弹窗 ----
+[spacing.components.analysis]
+category_gap = 0               # 分类行之间的空行
+gauge_margin_top = 0           # 仪表盘上方空行
+gauge_margin_bottom = 0        # 仪表盘下方空行
+gauge_height = 1               # 仪表盘高度（行数）
+gauge_gap = 1                  # 仪表盘下方的空行数
+
+# ---- 大文件弹窗 ----
+[spacing.components.large_files]
+item_gap = 0                   # 文件列表行之间的空行
+list_margin_top = 0            # 列表上方空行
+
+# ---- 详情弹窗 ----
+[spacing.components.detail]
+line_gap = 0                   # 信息行之间的空行
+gauge_margin_top = 1           # 仪表盘上方空行
+gauge_margin_bottom = 0        # 仪表盘下方空行
+
+# =============================================================================
+#  界面文字标签
+#  修改后重启即可生效。若想恢复默认，删除对应行或留空即可。
+# =============================================================================
+[labels]
+# ---- 系统信息栏 ----
+cpu = "CPU (处理器)"
+memory = "Memory (内存)"
+swap = "Swap (交换)"
+disk_io = "Disk I/O (磁盘)"
+total = "Total (总计)"
+
+# ---- 分析弹窗标题 & 分类 ----
+storage_analysis = "Storage Analysis (存储分析)"
+category = "Category (分类)"
+size = "Size (大小)"
+pct = "%"
+documents = "Documents (文档)"
+pictures = "Pictures (图片)"
+audio = "Audio (音频)"
+video = "Video (视频)"
+other = "Other (其他)"
+applications = "Applications (应用)"
+system = "System (系统)"
+cache = "Cache (缓存)"
+cat_total = "Total (总计)"
+
+# ---- 分析弹窗状态 ----
+scan_starting = "Starting scan... (开始扫描...)"
+scan_scanning = "Scanning (扫描中)"
+scan_complete = "Complete (完成)"
+dirs_scanned = "directories scanned (已扫描目录)"
+
+# ---- 大文件弹窗 ----
+large_files = "Large Files (大文件)"
+largest_files_prefix = "Top (前)"
+num = "#"
+file_size = "Size (大小)"
+path = "Path (路径)"
+
+# ---- 详情弹窗 ----
+volume_details = "Volume Details (卷详情)"
+volume_label = "Volume (卷标)"
+file_system = "File System (文件系统)"
+capacity = "Capacity (容量)"
+available = "Available (可用)"
+
+# ---- 分类文件弹窗 ----
+modified = "Modified (修改时间)"
+sort_by_size = "Size (大小)"
+sort_by_name = "Name (名称)"
+sort_by_time = "Time (时间)"
+file_detail_title = "File Details (文件详情)"
+path_label = "Path (路径)"
+mtime_label = "Modified (修改时间)"
+size_label = "Size (大小)"
+cat_label = "Category (分类)"
+
+# ---- 帮助菜单 ----
+help_title = "Help (帮助)"
+help_general = "General (通用)"
+help_main = "Main (主界面)"
+help_analysis = "Analysis (分析弹窗)"
+help_cat_files = "Category Files (分类文件)"
+help_detail = "Volume Details (卷详情)"
+help_exit = "Exit (退出)"
+
+# ---- 通用 ----
+back = "back (返回)"
+
+# =============================================================================
+#  文件详情收录阈值（单位 MB）
+#  低于此值的文件只累计分类总大小，不记录文件路径和详情
+# =============================================================================
+[thresholds]
+documents = 1       # 文档：≥ 1MB 收录
+pictures = 5        # 图片：≥ 5MB 收录
+audio = 5           # 音频：≥ 5MB 收录
+video = 50          # 视频：≥ 50MB 收录
+other = 5           # 其他：≥ 5MB 收录
+applications = 10   # 应用：≥ 10MB 收录
+# system = 不收录（固定禁止）
+cache = 1           # 缓存：≥ 1MB 收录

@@ -4,7 +4,7 @@ edition = "2024"
 license = "MIT"
 repository = "https://github.com/microsoft/coreutils"
 rust-version = "1.88.0"
-version = "2026.6.6"
+version = "2026.6.7"
 publish = false
 
 [profile.release]
@@ -138,6 +138,8 @@ tar = { package = "uu_tar", path = "deps/tar/src/uu/tar" }
 
 # Custom: wtop (Windows process monitor TUI)
 ratatui = "0.29"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
 
 # For nthelpers, dfree, etc.
 [dependencies.windows-sys]
