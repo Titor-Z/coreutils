@@ -164,7 +164,7 @@ struct STORAGE_PROPERTY_QUERY {
     additional_parameters: [u8; 1],
 }
 
-#[allow(non_snake_case)]
+#[allow(non_snake_case, dead_code)]
 #[repr(C)]
 struct STORAGE_DEVICE_DESCRIPTOR {
     version: DWORD,
@@ -300,6 +300,7 @@ const ART: &[&str] = &[
     r"└──────┘ └──────┘",
 ];
 
+#[allow(dead_code)]
 fn display_banner() {
     for line in ART {
         println!("{line}");
