@@ -1,4 +1,5 @@
 #![allow(non_snake_case, non_camel_case_types, unused)]
+
 mod config;
 
 use std::collections::HashMap;
@@ -8,6 +9,8 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use clap::Command;
+
 use ratatui::crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use ratatui::{
     DefaultTerminal, Frame,
@@ -16,7 +19,6 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, BorderType, Borders, Cell, Clear, Gauge, Paragraph, Row, Table, TableState},
 };
-use clap::Command;
 
 use config::Config;
 
@@ -92,7 +94,8 @@ struct VOLUME_DISK_EXTENTS {
 fn get_disk_number(letter: char) -> Option<u32> {
     let path: Vec<u16> = format!("\\\\.\\{}:", letter).encode_utf16().chain(std::iter::once(0)).collect();
     unsafe {
-        let h = CreateFileW(path.as_ptr(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        // 尝试用 GENERIC_READ 打开（某些系统需要 GENERIC_WRITE）
+        let h = CreateFileW(path.as_ptr(), 0x80000000 | 0x40000000, FILE_SHARE_READ | FILE_SHARE_WRITE,
             std::ptr::null_mut(), OPEN_EXISTING, 0, INVALID_HANDLE_VALUE);
         if h == INVALID_HANDLE_VALUE || h == 0 { return None; }
         let mut extents: VOLUME_DISK_EXTENTS = std::mem::zeroed();
@@ -187,7 +190,7 @@ fn get_volumes() -> Vec<VolumeInfo> {
             let root = format!("{}:\\", letter);
             let root_w: Vec<u16> = root.encode_utf16().chain(std::iter::once(0)).collect();
             let dt = GetDriveTypeW(root_w.as_ptr());
-            if dt != 3 { continue; }
+            if dt != 3 { continue; } // DRIVE_FIXED
             let mut free_bytes: u64 = 0;
             let mut total_bytes: u64 = 0;
             let ret = GetDiskFreeSpaceExW(root_w.as_ptr(), &mut free_bytes, &mut total_bytes, std::ptr::null_mut());
@@ -256,17 +259,20 @@ fn classify_by_ext(lower: &str) -> u8 {
 }
 
 fn categorize_path(lower: &str) -> u8 {
+    // 1. 缓存目录优先
     if lower.contains("\\temp") || lower.contains("\\prefetch") || lower.contains("\\inetcache")
         || lower.contains("\\softwaredistribution\\download")
     {
         return 7;
     }
+    // 2. Programs / Windows 按目录归属
     if lower.contains("\\program files") || lower.contains("\\program files (x86)") {
         return 5;
     }
     if lower.contains("\\windows") {
         return 6;
     }
+    // 3. 其余按扩展名分类
     classify_by_ext(lower)
 }
 
@@ -322,6 +328,7 @@ fn scan_drive(drive: char, thresholds: Arc<config::Thresholds>, cats: Arc<Mutex<
     let windows = format!("{}:\\Windows", drive);
     let root = format!("{}:\\", drive);
 
+    // 禁止扫描的系统保留目录
     let skip_dirs: Vec<String> = vec![
         format!("{}:\\System Volume Information", drive).to_lowercase(),
         format!("{}:\\$Recycle.Bin", drive).to_lowercase(),
@@ -330,6 +337,7 @@ fn scan_drive(drive: char, thresholds: Arc<config::Thresholds>, cats: Arc<Mutex<
         format!("{}:\\Windows\\Prefetch", drive).to_lowercase(),
     ];
 
+    // 扫描各目标路径
     if std::path::Path::new(&user).exists() {
         scan_dir(&user, None, &thresholds, &cats, &files, &dirs_scanned, &cancelled);
     }
@@ -342,6 +350,7 @@ fn scan_drive(drive: char, thresholds: Arc<config::Thresholds>, cats: Arc<Mutex<
     if std::path::Path::new(&windows).exists() {
         scan_dir(&windows, Some(6), &thresholds, &cats, &files, &dirs_scanned, &cancelled);
     }
+    // 根目录文件（排除已扫目录和保留目录）
     match std::fs::read_dir(&root) {
         Ok(entries) => {
             for entry in entries.flatten() {
@@ -350,6 +359,7 @@ fn scan_drive(drive: char, thresholds: Arc<config::Thresholds>, cats: Arc<Mutex<
                 let lower = path.to_string_lossy().to_lowercase();
                 if skip_dirs.iter().any(|s| lower.starts_with(s)) { continue; }
                 if entry.file_type().map(|t| t.is_dir()).unwrap_or(false) {
+                    // 跳过 Program Files / Windows / Users / System Volume Info 等一级目录
                     if lower.starts_with(&format!("{}:\\program files", drive).to_lowercase())
                         || lower.starts_with(&format!("{}:\\windows", drive).to_lowercase())
                         || lower.starts_with(&format!("{}:\\users", drive).to_lowercase())
@@ -511,9 +521,9 @@ fn render(f: &mut Frame, app: &App) {
     f.render_widget(block, area);
 
     let chunks = Layout::vertical([
-        Constraint::Length(5),
-        Constraint::Min(3),
-        Constraint::Length(1),
+        Constraint::Length(5),     // sys header
+        Constraint::Min(3),        // volume table
+        Constraint::Length(1),     // footer
     ]).split(inner);
 
     let sh = &s.sys_header;
@@ -557,10 +567,11 @@ fn render(f: &mut Frame, app: &App) {
     ]));
     f.render_widget(Paragraph::new(sys_lines), chunks[0]);
 
+    // 按物理磁盘分组显示
     let selected_idx = app.selected;
     let vs = &s.volume_table;
     let row_pad = " ".repeat(vs.row_prefix as usize);
-    let mut disk_groups: Vec<(u32, Vec<usize>, u64)> = Vec::new();
+    let mut disk_groups: Vec<(u32, Vec<usize>, u64)> = Vec::new(); // (disk_number, volume_indices, total_capacity)
     let mut unknown: Vec<usize> = Vec::new();
     for (i, v) in app.vols.iter().enumerate() {
         match v.disk_number {
@@ -577,6 +588,7 @@ fn render(f: &mut Frame, app: &App) {
     }
     disk_groups.sort_by_key(|g| g.0);
 
+    // 用 Table 占满宽度
     let mut table_rows: Vec<Row> = Vec::new();
     let mut sel_row: Option<usize> = None;
     for (disk, indices, total_cap) in &disk_groups {
@@ -766,6 +778,7 @@ fn render_analysis_popup(f: &mut Frame, area: Rect, drive: char, cats: &Arc<Mute
     let cat_sizes = [cats_guard.documents, cats_guard.pictures, cats_guard.audio, cats_guard.video, cats_guard.other, cats_guard.applications, cats_guard.system, cats_guard.cache];
     let cat_colors = [p.cat_documents, p.cat_pictures, p.cat_audio, p.cat_video, p.cat_other, p.cat_applications, p.cat_system, p.cat_cache];
 
+    // 内容区：总行 + 表格 + 空行 + 底部
     let content_parts = Layout::vertical([
         Constraint::Length(2),
         Constraint::Fill(1),
@@ -773,11 +786,13 @@ fn render_analysis_popup(f: &mut Frame, area: Rect, drive: char, cats: &Arc<Mute
         Constraint::Length(1),
     ]).split(chunks[content_idx]);
 
+    // 总行
     f.render_widget(Paragraph::new(Line::from(Span::styled(
         format!(" {} {:.1} GiB", L.cat_total, total_gb),
         Style::default().fg(p.text_highlight).bold(),
     ))), content_parts[0]);
 
+    // 分类表格
     let rows: Vec<Row> = (0..8).map(|i| {
         let pct = if total_size > 0 { cat_sizes[i] as f64 / total_size as f64 * 100.0 } else { 0.0 };
         let is_sel = i == selected_category;
@@ -799,6 +814,7 @@ fn render_analysis_popup(f: &mut Frame, area: Rect, drive: char, cats: &Arc<Mute
         .header(header);
     f.render_widget(table, content_parts[1]);
 
+    // 底部
     let footer = Paragraph::new(Line::from(vec![
         Span::raw(" "),
         Span::styled("[↑↓]", Style::default().fg(p.key_binding)),
@@ -867,24 +883,26 @@ fn render_category_files_popup(f: &mut Frame, area: Rect, drive: char, cat_name:
     let inner = block.inner(popup);
     f.render_widget(block, popup);
 
-    let table_rows: usize = 25;
+    let table_rows: usize = 25; // 固定显示 25 行数据
     let table_header: usize = 1;
     let table_total = (table_rows + table_header) as u16;
     let chunks = Layout::vertical([
-        Constraint::Length(1), Constraint::Length(1),
-        Constraint::Length(1),
-        Constraint::Length(table_total),
-        Constraint::Length(1),
-        Constraint::Length(1),
-        Constraint::Fill(1),
+        Constraint::Length(1), Constraint::Length(1), // 标题
+        Constraint::Length(1),  // 排序状态栏
+        Constraint::Length(table_total), // 表格（固定高度）
+        Constraint::Length(1),  // 空行
+        Constraint::Length(1),  // 底部
+        Constraint::Fill(1),    // 剩余空白
     ]).split(inner);
 
+    // 标题
     let title = Paragraph::new(Line::from(Span::styled(
         format!("{}: {}", drive, cat_name),
         Style::default().fg(cat_color).bold(),
     ))).alignment(Alignment::Center);
     f.render_widget(title, chunks[0]);
 
+    // 排序状态栏（带位置指示）
     let sort_indicator = if sort_desc { "↓" } else { "↑" };
     let sort_label = match sort_by {
         SortField::Size => format!("{} {}", L.sort_by_size, sort_indicator),
@@ -911,8 +929,9 @@ fn render_category_files_popup(f: &mut Frame, area: Rect, drive: char, cat_name:
         Span::styled(format!("{}/{}", selected + 1, total), Style::default().fg(p.text_secondary)),
     ])), chunks[2]);
 
+    // 表格（全量传入，Table 自动管理滚动）
     let table_area = chunks[3];
-    let path_col_w = table_area.width.saturating_sub(26) as usize;
+    let path_col_w = table_area.width.saturating_sub(26) as usize; // 26 = 3(#) + 10(size) + 10(modified) + 3(...)
     let path_max = if path_col_w > 4 { path_col_w } else { 30 };
     let rows: Vec<Row> = files.iter().enumerate().map(|(i, f)| {
         let is_sel = i == selected;
@@ -946,6 +965,7 @@ fn render_category_files_popup(f: &mut Frame, area: Rect, drive: char, cat_name:
     let mut state = TableState::new().with_selected(Some(selected));
     f.render_stateful_widget(table, table_area, &mut state);
 
+    // 底部
     let footer = Paragraph::new(Line::from(vec![
         Span::raw(" "),
         Span::styled("[↑↓/PgUp/PgDn]", Style::default().fg(p.key_binding)),
@@ -974,6 +994,7 @@ fn render_category_files_popup(f: &mut Frame, area: Rect, drive: char, cat_name:
     ]));
     f.render_widget(footer, chunks[5]);
 
+    // 详情覆盖层
     if let Some(idx) = detail {
         if idx < files.len() {
             render_file_detail_overlay(f, popup, &files[idx], cfg);
@@ -992,7 +1013,7 @@ fn render_file_detail_overlay(f: &mut Frame, parent_area: Rect, file: &LargeFile
     let cat_display = format!("{} {}", cat_names[cat_idx], L.cat_label);
 
     let overlay_w = parent_area.width.min(60).max(40);
-    let line_w = (overlay_w - 2) as usize;
+    let line_w = (overlay_w - 2) as usize; // minus borders
     let prefix_w = format!("{}: ", L.path_label).chars().count();
     let path_chars: Vec<char> = file.path.chars().collect();
     let path_lines_count = if path_chars.is_empty() { 1 } else {
@@ -1093,17 +1114,18 @@ fn render_detail_popup(f: &mut Frame, area: Rect, drive: char, label: &str, fs_t
     if gauge_margin_bottom > 0 { gauge_layout.push(Constraint::Length(gauge_margin_bottom)); }
 
     let mut vchunks = vec![
-        Constraint::Length(1),
-        Constraint::Length(1),
-        Constraint::Length(detail_height),
+        Constraint::Length(1),              // 标题行
+        Constraint::Length(1),              // 标题下空行
+        Constraint::Length(detail_height),  // 详情行
     ];
     vchunks.extend(gauge_layout);
-    vchunks.push(Constraint::Length(1));
-    vchunks.push(Constraint::Fill(1));
-    vchunks.push(Constraint::Length(1));
+    vchunks.push(Constraint::Length(1));    // 空行
+    vchunks.push(Constraint::Fill(1));      // 撑满弹窗，把底部按钮推下去
+    vchunks.push(Constraint::Length(1));    // 底部帮助（贴底）
 
     let chunks = Layout::vertical(vchunks).split(inner);
 
+    // 渲染标题
     let title = Paragraph::new(Line::from(Span::styled(
         format!("{}: {}", drive, L.volume_details),
         Style::default().fg(p.title_text).bold(),
@@ -1185,6 +1207,7 @@ fn run(terminal: &mut DefaultTerminal, interval: u64) -> io::Result<()> {
             if let Ok(event) = event::read() {
                 match event {
                     Event::Key(key) if key.kind == KeyEventKind::Press => {
+                        // 帮助菜单切换
                         if key.code == KeyCode::Char('?') {
                             app.show_help = !app.show_help;
                             continue;

@@ -2,14 +2,24 @@ use std::fs;
 use std::path::Path;
 use ratatui::style::Color;
 
+// =================================================================
+//  Config — 主配置结构体
+// =================================================================
+
+/// 全局应用配置，由 `dfree.toml` 加载，若无配置文件则使用内置默认值
 pub struct Config {
+    /// 调色板（所有颜色值）
     pub palette: Palette,
+    /// 各组件间距配置
     pub spacing: Spacing,
+    /// 界面文字标签（中英文对照）
     pub labels: Labels,
+    /// 各分类文件详情的体积下限（低于此值只计总数，不记录文件路径）
     pub thresholds: Thresholds,
 }
 
 impl Config {
+    /// 尝试从 `dfree.toml` 加载配置；文件不存在时返回内置默认值
     pub fn load() -> Self {
         let config_path = Path::new("dfree.toml");
         if config_path.exists() {
@@ -18,13 +28,13 @@ impl Config {
                     match toml::from_str::<ConfigFile>(&content) {
                         Ok(cfg_file) => Config::from_file(cfg_file),
                         Err(e) => {
-                            eprintln!("⚠  Config parse error, using defaults: {}", e);
+                            eprintln!("⚠  配置文件解析出错，使用默认配置: {}", e);
                             Config::default()
                         }
                     }
                 }
                 Err(e) => {
-                    eprintln!("⚠  Config read error, using defaults: {}", e);
+                    eprintln!("⚠  读取配置文件失败，使用默认配置: {}", e);
                     Config::default()
                 }
             }
@@ -33,6 +43,7 @@ impl Config {
         }
     }
 
+    /// 将 TOML 反序列化得到的中间结构体转换为类型化的 Config
     fn from_file(f: ConfigFile) -> Self {
         Config {
             palette: Palette::from_raw(f.palette),
@@ -42,6 +53,7 @@ impl Config {
         }
     }
 
+    /// 内置默认配置（莫兰迪配色）
     pub fn default() -> Self {
         Config {
             palette: Palette::from_raw(PaletteRaw::default()),
@@ -52,40 +64,88 @@ impl Config {
     }
 }
 
+// =================================================================
+//  调色板 (Palette)
+// =================================================================
+
+/// 颜色调色板，所有值均为莫兰迪低饱和色系
 pub struct Palette {
+    /// 弹窗背景色
     pub popup_bg: Color,
+    /// 弹窗边框色
     pub popup_border: Color,
+    /// 主文字颜色
     pub text_primary: Color,
+    /// 辅助文字颜色
     pub text_secondary: Color,
+    /// 强调文字颜色（如标题、数值）
     pub text_highlight: Color,
+
+    // ---- 系统信息栏标签 ----
+    /// CPU 标签颜色
     pub label_cpu: Color,
+    /// Memory 标签颜色
     pub label_memory: Color,
+    /// Swap 标签颜色
     pub label_swap: Color,
+    /// Disk I/O 标签颜色
     pub label_disk_io: Color,
+    /// Total 标签颜色
     pub label_total: Color,
+
+    // ---- 快捷键 / 按钮 ----
+    /// 快捷键按键颜色（如 [Enter], [q]）
     pub key_binding: Color,
+    /// 快捷键说明文字颜色
     pub key_desc: Color,
+
+    // ---- 存储分类（分析弹窗） ----
+    /// 文档分类颜色
     pub cat_documents: Color,
+    /// 图片分类颜色
     pub cat_pictures: Color,
+    /// 音频分类颜色
     pub cat_audio: Color,
+    /// 视频分类颜色
     pub cat_video: Color,
+    /// 其他分类颜色
     pub cat_other: Color,
+    /// 应用分类颜色
     pub cat_applications: Color,
+    /// 系统分类颜色
     pub cat_system: Color,
+    /// 缓存分类颜色
     pub cat_cache: Color,
+
+    // ---- 仪表盘 (Gauge) ----
+    /// 扫描完成时的仪表盘颜色
     pub gauge_done: Color,
+    /// 扫描中的仪表盘颜色
     pub gauge_scanning: Color,
+    /// 正常使用率颜色（< 70%）
     pub gauge_ok: Color,
+    /// 警告使用率颜色（70% ~ 90%）
     pub gauge_warn: Color,
+    /// 危险使用率颜色（>= 90%）
     pub gauge_danger: Color,
+
+    // ---- 表格 ----
+    /// 表头文字颜色
     pub table_header: Color,
+    /// 表格行文字颜色
     pub table_row: Color,
+    /// 选中行背景色
     pub table_selected_bg: Color,
+
+    // ---- 窗口标题 ----
+    /// 标题文字颜色
     pub title_text: Color,
+    /// 标题边框颜色
     pub title_border: Color,
 }
 
 impl Palette {
+    /// 从 TOML 反序列化的原始字符串字典构建调色板
     fn from_raw(r: PaletteRaw) -> Self {
         Palette {
             popup_bg:         hex_or(&r.popup_bg, "#2d2d2d"),
@@ -121,6 +181,7 @@ impl Palette {
         }
     }
 
+    /// 根据使用率百分比返回对应的仪表盘颜色
     pub fn usage_color(&self, pct: f64) -> Color {
         if pct >= 90.0 { self.gauge_danger }
         else if pct >= 70.0 { self.gauge_warn }
@@ -128,79 +189,133 @@ impl Palette {
     }
 }
 
+// =================================================================
+//  间距配置 (Spacing)
+// =================================================================
+
+/// 间距配置 —— 按组件划分，每个组件有独立的间距值
 pub struct Spacing {
+    /// 窗口标题间距
     pub title: TitleSpacing,
+    /// 系统信息栏间距
     pub sys_header: SysHeaderSpacing,
+    /// 磁盘列表间距
     pub volume_table: VolumeTableSpacing,
+    /// 底部快捷键栏间距
     pub footer: FooterSpacing,
+    /// 弹窗通用间距
     pub popup: PopupSpacing,
+    /// 分析弹窗专属间距
     pub analysis: AnalysisSpacing,
+    /// 大文件弹窗专属间距
     pub large_files: LargeFilesSpacing,
+    /// 详情弹窗专属间距
     pub detail: DetailSpacing,
 }
 
 impl Spacing { fn from_raw(r: SpacingRaw) -> Self { Spacing { title: TitleSpacing::from_raw(r.components.title), sys_header: SysHeaderSpacing::from_raw(r.components.sys_header), volume_table: VolumeTableSpacing::from_raw(r.components.volume_table), footer: FooterSpacing::from_raw(r.components.footer), popup: PopupSpacing::from_raw(r.components.popup), analysis: AnalysisSpacing::from_raw(r.components.analysis), large_files: LargeFilesSpacing::from_raw(r.components.large_files), detail: DetailSpacing::from_raw(r.components.detail), } } fn default() -> Self { Spacing::from_raw(SpacingRaw::default()) } }
 
+/// 窗口标题 —— 标题文字左右两侧的空白字符数
 pub struct TitleSpacing {
+    /// 标题左侧空格数（默认 1）
     pub left: u16,
+    /// 标题右侧空格数（默认 1）
     pub right: u16,
 }
 impl TitleSpacing { fn from_raw(r: TitleSpacingRaw) -> Self { TitleSpacing { left: r.left.unwrap_or(1), right: r.right.unwrap_or(1) } } }
 
+/// 系统信息栏 —— CPU / Memory / Swap / Disk I/O 所在的两行
 pub struct SysHeaderSpacing {
+    /// 标签和数值之间的空格数，如 "CPU:" 和 "12.5%" 之间（默认 1）
     pub label_value_gap: u16,
+    /// 不同指标组之间的空格数（默认 2）
     pub item_gap: u16,
+    /// 两行系统信息之间的空行数（默认 0）
     pub line_gap: u16,
+    /// 组与组之间的分隔符字符串（默认 "  │  "）
     pub separator: String,
 }
 impl SysHeaderSpacing { fn from_raw(r: SysHeaderSpacingRaw) -> Self { SysHeaderSpacing { label_value_gap: r.label_value_gap.unwrap_or(1), item_gap: r.item_gap.unwrap_or(2), line_gap: r.line_gap.unwrap_or(0), separator: r.separator.unwrap_or_else(|| "  │  ".to_string()), } } }
 
+/// 磁盘列表 —— 表头和每一行的前缀空格
 pub struct VolumeTableSpacing {
+    /// 表头文字前的空格数，如 "Volumes" 前面（默认 1）
     pub header_prefix: u16,
+    /// 每行文字前的空格数（默认 1）
     pub row_prefix: u16,
+    /// 行与行之间的空行数（默认 0）
     pub row_gap: u16,
 }
 impl VolumeTableSpacing { fn from_raw(r: VolumeTableSpacingRaw) -> Self { VolumeTableSpacing { header_prefix: r.header_prefix.unwrap_or(1), row_prefix: r.row_prefix.unwrap_or(1), row_gap: r.row_gap.unwrap_or(0), } } }
 
+/// 底部快捷键栏 —— 底部操作提示行
 pub struct FooterSpacing {
+    /// 底部栏左端空格数（默认 1）
     pub prefix: u16,
+    /// 快捷键按键和说明文字之间的空格，如 "[↑↓] 选择"（默认 1）
     pub key_desc_gap: u16,
+    /// 不同快捷键组之间的空格数（默认 2）
     pub group_gap: u16,
 }
 impl FooterSpacing { fn from_raw(r: FooterSpacingRaw) -> Self { FooterSpacing { prefix: r.prefix.unwrap_or(1), key_desc_gap: r.key_desc_gap.unwrap_or(1), group_gap: r.group_gap.unwrap_or(2), } } }
 
+/// 弹窗通用间距 —— 所有弹窗共享的间距
 pub struct PopupSpacing {
+    /// 弹窗标题左右两端的空格数（默认 1）
     pub title_padding_x: u16,
+    /// 弹窗内容区左侧空格数（默认 1）
     pub content_left: u16,
+    /// 弹窗内容区右侧空格数（默认 1）
     pub content_right: u16,
+    /// 弹窗内容区顶部空行数（默认 0）
     pub content_top: u16,
+    /// 弹窗内容区底部空行数（默认 0）
     pub content_bottom: u16,
+    /// 帮助文字上方的空行数（默认 1）
     pub footer_gap_top: u16,
 }
 impl PopupSpacing { fn from_raw(r: PopupSpacingRaw) -> Self { PopupSpacing { title_padding_x: r.title_padding_x.unwrap_or(1), content_left: r.content_left.unwrap_or(1), content_right: r.content_right.unwrap_or(1), content_top: r.content_top.unwrap_or(0), content_bottom: r.content_bottom.unwrap_or(0), footer_gap_top: r.footer_gap_top.unwrap_or(1), } } }
 
+/// 分析弹窗专属间距
 pub struct AnalysisSpacing {
+    /// 分类列表行之间的空行数（默认 0）
     pub category_gap: u16,
+    /// 仪表盘上方空行数（默认 0）
     pub gauge_margin_top: u16,
+    /// 仪表盘下方空行数（默认 0）
     pub gauge_margin_bottom: u16,
+    /// 仪表盘高度（行数），默认 1
     pub gauge_height: u16,
+    /// 仪表盘下方空行数（默认 1）
     pub gauge_gap: u16,
 }
 impl AnalysisSpacing { fn from_raw(r: AnalysisSpacingRaw) -> Self { AnalysisSpacing { category_gap: r.category_gap.unwrap_or(0), gauge_margin_top: r.gauge_margin_top.unwrap_or(0), gauge_margin_bottom: r.gauge_margin_bottom.unwrap_or(0), gauge_height: r.gauge_height.unwrap_or(1), gauge_gap: r.gauge_gap.unwrap_or(1), } } }
 
+/// 大文件弹窗专属间距
 pub struct LargeFilesSpacing {
+    /// 文件列表行之间的空行数（默认 0）
     pub item_gap: u16,
+    /// 列表上方空行数（默认 0）
     pub list_margin_top: u16,
 }
 impl LargeFilesSpacing { fn from_raw(r: LargeFilesSpacingRaw) -> Self { LargeFilesSpacing { item_gap: r.item_gap.unwrap_or(0), list_margin_top: r.list_margin_top.unwrap_or(0), } } }
 
+/// 详情弹窗专属间距
 pub struct DetailSpacing {
+    /// 信息行之间的空行数（默认 0）
     pub line_gap: u16,
+    /// 仪表盘上方空行数（默认 1）
     pub gauge_margin_top: u16,
+    /// 仪表盘下方空行数（默认 0）
     pub gauge_margin_bottom: u16,
 }
 impl DetailSpacing { fn from_raw(r: DetailSpacingRaw) -> Self { DetailSpacing { line_gap: r.line_gap.unwrap_or(0), gauge_margin_top: r.gauge_margin_top.unwrap_or(1), gauge_margin_bottom: r.gauge_margin_bottom.unwrap_or(0), } } }
 
+// =================================================================
+//  体积下限配置 (Thresholds)
+// =================================================================
+
+/// 各分类收录文件详情的体积下限（字节），低于此值的文件只累加分类总数，不记录路径
 #[derive(Clone)]
 pub struct Thresholds {
     pub documents: u64,
@@ -221,7 +336,7 @@ impl Thresholds {
             3 => self.video,
             4 => self.other,
             5 => self.applications,
-            6 => u64::MAX,
+            6 => u64::MAX,      // System 永不收录文件详情
             7 => self.cache,
             _ => 0,
         }
@@ -252,12 +367,20 @@ impl Thresholds {
 
 fn mb(v: Option<u64>) -> Option<u64> { v.map(|m| m * 1024 * 1024) }
 
+// =================================================================
+//  界面文字标签 (Labels)
+// =================================================================
+
+/// 界面文字标签 —— 所有界面显示的文本，默认中英文对照
 pub struct Labels {
+    // ---- 系统信息栏 ----
     pub cpu: String,
     pub memory: String,
     pub swap: String,
     pub disk_io: String,
     pub total: String,
+
+    // ---- 分析弹窗 ----
     pub storage_analysis: String,
     pub category: String,
     pub size: String,
@@ -275,16 +398,22 @@ pub struct Labels {
     pub scan_scanning: String,
     pub scan_complete: String,
     pub dirs_scanned: String,
+
+    // ---- 大文件弹窗 ----
     pub large_files: String,
     pub largest_files_prefix: String,
     pub num: String,
     pub file_size: String,
     pub path: String,
+
+    // ---- 详情弹窗 ----
     pub volume_details: String,
     pub volume_label: String,
     pub file_system: String,
     pub capacity: String,
     pub available: String,
+
+    // ---- 分类文件弹窗 ----
     pub modified: String,
     pub sort_by_size: String,
     pub sort_by_name: String,
@@ -294,6 +423,8 @@ pub struct Labels {
     pub mtime_label: String,
     pub size_label: String,
     pub cat_label: String,
+
+    // ---- 帮助菜单 ----
     pub help_title: String,
     pub help_general: String,
     pub help_main: String,
@@ -301,6 +432,8 @@ pub struct Labels {
     pub help_cat_files: String,
     pub help_detail: String,
     pub help_exit: String,
+
+    // ---- 通用 ----
     pub back: String,
     pub large_files_btn: String,
 }
@@ -362,6 +495,10 @@ impl Labels {
         }
     }
 }
+
+// =================================================================
+//  TOML 反序列化中间结构体（私有，不对外暴露）
+// =================================================================
 
 use serde::Deserialize;
 
@@ -524,6 +661,11 @@ struct LabelsRaw {
     #[serde(default)] large_files_btn: Option<String>,
 }
 
+// =================================================================
+//  工具函数
+// =================================================================
+
+/// 将 "#rrggbb" 格式的十六进制颜色字符串解析为 ratatui 的 Color
 fn hex_color(s: &str) -> Color {
     let s = s.trim_start_matches('#');
     if s.len() == 6 {
@@ -536,6 +678,7 @@ fn hex_color(s: &str) -> Color {
     }
 }
 
+/// 解析十六进制颜色，若字符串为空则返回默认值
 fn hex_or(s: &str, default: &str) -> Color {
     if s.is_empty() { hex_color(default) } else { hex_color(s) }
 }
