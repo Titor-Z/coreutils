@@ -69,7 +69,7 @@ unsafe extern "system" {
     fn GlobalMemoryStatusEx(lpBuffer: *mut MEMORYSTATUSEX) -> BOOL;
     fn CloseHandle(hObject: HANDLE) -> BOOL;
     fn CreateFileW(lpFileName: LPCWSTR, dwDesiredAccess: DWORD, dwShareMode: DWORD, lpSecurityAttributes: *mut std::ffi::c_void, dwCreationDisposition: DWORD, dwFlagsAndAttributes: DWORD, hTemplateFile: HANDLE) -> HANDLE;
-    fn DeviceIoControl(hDevice: HANDLE, dwIoControlCode: DWORD, lpInBuffer: *mut std::ffi::c_void, nInBufferSize: DWORD, lpOutBuffer: *mut std::ffi::c_void, nOutBufferSize: DWORD, lpBytesReturned: *mut DWORD, lpOverlapped: *mut std::ffi::c_void) -> BOOL;
+    fn DeviceIoControl(hDevice: HANDLE, dwIoControlCode: DWORD, lpInBuffer: *const std::ffi::c_void, nInBufferSize: DWORD, lpOutBuffer: *mut std::ffi::c_void, nOutBufferSize: DWORD, lpBytesReturned: *mut DWORD, lpOverlapped: *mut std::ffi::c_void) -> BOOL;
     fn GetCurrentProcess() -> HANDLE;
     fn GetProcessIoCounters(hProcess: HANDLE, lpIoCounters: *mut IO_COUNTERS) -> BOOL;
 }

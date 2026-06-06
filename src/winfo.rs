@@ -228,7 +228,7 @@ unsafe extern "system" {
         lpFileName: LPCWSTR,
         dwDesiredAccess: DWORD,
         dwShareMode: DWORD,
-        lpSecurityAttributes: *mut u8,
+        lpSecurityAttributes: *mut std::ffi::c_void,
         dwCreationDisposition: DWORD,
         dwFlagsAndAttributes: DWORD,
         hTemplateFile: HANDLE,
@@ -236,12 +236,12 @@ unsafe extern "system" {
     fn DeviceIoControl(
         hDevice: HANDLE,
         dwIoControlCode: DWORD,
-        lpInBuffer: *const u8,
+        lpInBuffer: *const std::ffi::c_void,
         nInBufferSize: DWORD,
-        lpOutBuffer: *mut u8,
+        lpOutBuffer: *mut std::ffi::c_void,
         nOutBufferSize: DWORD,
         lpBytesReturned: *mut DWORD,
-        lpOverlapped: *mut u8,
+        lpOverlapped: *mut std::ffi::c_void,
     ) -> BOOL;
     fn CloseHandle(hObject: HANDLE) -> BOOL;
 }
@@ -565,8 +565,8 @@ fn get_disk_type(letter: char) -> String {
         let mut ret = 0u32;
         let ok = DeviceIoControl(
             hvol, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
-            std::ptr::null(), 0,
-            ext_buf.as_mut_ptr(), ext_buf.len() as u32,
+            std::ptr::null::<std::ffi::c_void>(), 0,
+            ext_buf.as_mut_ptr() as *mut std::ffi::c_void, ext_buf.len() as u32,
             &mut ret, std::ptr::null_mut(),
         );
         CloseHandle(hvol);
@@ -590,8 +590,8 @@ fn get_disk_type(letter: char) -> String {
         let mut ret = 0u32;
         let ok1 = DeviceIoControl(
             hphys, IOCTL_STORAGE_QUERY_PROPERTY,
-            &query as *const _ as *const u8, qsize,
-            header.as_mut_ptr(), header.len() as u32,
+            &query as *const _ as *const std::ffi::c_void, qsize,
+            header.as_mut_ptr() as *mut std::ffi::c_void, header.len() as u32,
             &mut ret, std::ptr::null_mut(),
         );
         if ok1 == 0 { CloseHandle(hphys); return String::new(); }
@@ -602,8 +602,8 @@ fn get_disk_type(letter: char) -> String {
         let mut ret = 0u32;
         let ok2 = DeviceIoControl(
             hphys, IOCTL_STORAGE_QUERY_PROPERTY,
-            &query as *const _ as *const u8, qsize,
-            buf.as_mut_ptr(), buf.len() as u32,
+            &query as *const _ as *const std::ffi::c_void, qsize,
+            buf.as_mut_ptr() as *mut std::ffi::c_void, buf.len() as u32,
             &mut ret, std::ptr::null_mut(),
         );
 
@@ -626,8 +626,8 @@ fn get_disk_type(letter: char) -> String {
             let mut ret2 = 0u32;
             let ok2 = DeviceIoControl(
                 hphys, IOCTL_STORAGE_QUERY_PROPERTY,
-                &query2 as *const _ as *const u8, qsize,
-                &mut seek as *mut _ as *mut u8, size_of::<STORAGE_SEEK_PENALTY_DESCRIPTOR>() as u32,
+                &query2 as *const _ as *const std::ffi::c_void, qsize,
+                &mut seek as *mut _ as *mut std::ffi::c_void, size_of::<STORAGE_SEEK_PENALTY_DESCRIPTOR>() as u32,
                 &mut ret2, std::ptr::null_mut(),
             );
             if ok2 != 0 && seek.incurs_seek_penalty != 0 {
