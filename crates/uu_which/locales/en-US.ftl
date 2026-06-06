@@ -1,0 +1,3 @@
+which-about = Show the full path of commands.
+which-usage = which [OPTION]... COMMAND...
+which-help-all = print all matching entries in PATH, not just the first

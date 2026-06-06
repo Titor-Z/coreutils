@@ -106,6 +106,7 @@ unexpand = { package = "uu_unexpand", path = "deps/coreutils/src/uu/unexpand" }
 uniq = { package = "uu_uniq", path = "deps/coreutils/src/uu/uniq" }
 unlink = { package = "uu_unlink", path = "deps/coreutils/src/uu/unlink" }
 wc = { package = "uu_wc", path = "deps/coreutils/src/uu/wc" }
+which = { package = "uu_which", path = "crates/uu_which" }
 yes = { package = "uu_yes", path = "deps/coreutils/src/uu/yes" }
 
 # coreutils feat_Tier1

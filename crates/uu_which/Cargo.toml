@@ -1,0 +1,20 @@
+[package]
+name = "uu_which"
+description = "which ~ locate a command"
+version = "2026.6.5"
+license = "MIT"
+edition = "2024"
+rust-version = "1.88.0"
+
+[lib]
+path = "src/which.rs"
+test = false
+doctest = false
+
+[dependencies]
+clap = { version = "4.5", features = ["wrap_help", "cargo", "color"] }
+uucore = { path = "../../deps/coreutils/src/uucore" }
+
+[[bin]]
+name = "which"
+path = "src/main.rs"
