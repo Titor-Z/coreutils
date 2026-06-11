@@ -4,16 +4,16 @@
 
 ### v2026.6.12 — 2026-06-12
 
-- docs: 创建 opencode skill `opencode/skills/coreutils/SKILL.md`（完整命令参考 + 冲突表 + TTY 差异）— [12aa911]
-- docs: 创建 `opencode/docs/coreutils.md`（instruction 源文件）— [12aa911]
-- docs: 创建 `INSTALL_OPENCODE.md`（用户安装指南）— [12aa911]
+- docs: 创建 opencode skill `opencode/skills/coreutils/SKILL.md`（完整命令参考 + 冲突表 + TTY 差异）— [f6e2dfd]
+- docs: 创建 `opencode/docs/coreutils.md`（instruction 源文件）— [f6e2dfd]
+- docs: 创建 `INSTALL_OPENCODE.md`（用户安装指南）— [f6e2dfd]
 - docs: `coreutils.exe --list` 增加分类标签 `[microsoft]`、`[uutils]`、`[custom]` — [fceba29]
 - feat: 添加 `la` 作为 `ls -A` 的别名 — [fceba29]
 
 ### v2026.6.10 — 2026-06-10
 
 - feat: 新建 AGENTS.md 规范文档（changelog/taolun/agents/项目进度/认知修正）— [fceba29]
-- chore: 删除 `skills/` 旧目录（内容已迁移至 `opencode/`）— [12aa911]
+- chore: 删除 `skills/` 旧目录（内容已迁移至 `opencode/`）— [f6e2dfd]
 
 ### v2026.6.6 — 2026-06-10
 
@@ -33,6 +33,7 @@
 [dc1f789]: https://github.com/Titor-Z/coreutils/commit/dc1f789
 [2c62aba]: https://github.com/Titor-Z/coreutils/commit/2c62aba
 [dbe4d2b]: https://github.com/Titor-Z/coreutils/commit/dbe4d2b
+[f6e2dfd]: https://github.com/Titor-Z/coreutils/commit/f6e2dfd
 
 ### v2026.6.5 — 2026-06-09
 
@@ -184,9 +185,9 @@ grep, ls, seq, sed, find, sleep, head, tail, sort, wc, cat
 - [x] 子模块拉取（SSH 代替 HTTPS）— [v2026.6.6]
 - [x] 创建 AGENTS.md 规范文档 — [fceba29]
 - [x] dfree.toml 配置文件支持
-- [x] opencode skill 文档（`opencode/skills/coreutils/SKILL.md`）— [12aa911]
-- [x] opencode instruction 交付文件（`opencode/docs/coreutils.md`）— [12aa911]
-- [x] 用户安装指南（`INSTALL_OPENCODE.md`）— [12aa911]
+- [x] opencode skill 文档（`opencode/skills/coreutils/SKILL.md`）— [f6e2dfd]
+- [x] opencode instruction 交付文件（`opencode/docs/coreutils.md`）— [f6e2dfd]
+- [x] 用户安装指南（`INSTALL_OPENCODE.md`）— [f6e2dfd]
 
 [v2026.6.5]: https://github.com/Titor-Z/coreutils/tree/v2026.6.5
 [v2026.6.6]: https://github.com/Titor-Z/coreutils/tree/v2026.6.6
