@@ -91,22 +91,20 @@ PowerShell 为以下命令设置了内置 alias，直接使用命令名会被 Po
 以下命令与 PowerShell 无冲突，直接使用短命令名即可：
 
 ```
-arch.exe?   base32.exe? basename    basenc      b2sum?      cksum?
-cmp         comm?       csplit      cut         date        df
-dirname     du          env         expr        factor      false
-find        fmt         fold        grep        head        hostname
-join        link        ln          md5sum?     mktemp      nl
-nproc       numfmt      od          paste       pathchk     pr
-printenv    printf      ptx         readlink    realpath    rm?
-rmdir?      sed         seq         sha1sum?    sha224sum?  sha256sum?
-sha384sum?  sha512sum?  shuf        split       stat        sum
-tac         tail        tar         test        touch       tr
-true        truncate    tsort       unexpand    uniq        unlink
-uptime      wc          which       xargs       yes         dfree
-la          winfo       wtop
+arch         base32       base64       basename     basenc       b2sum
+cksum        cmp          comm         csplit       cut          date
+df           dfree        diff         dirname      du           env
+expr         factor       false        find         fmt          fold
+grep         head         hostname     join         la           link
+ln           md5sum       mktemp       nl           nproc        numfmt
+od           paste        pathchk      pr           printenv     printf
+ptx          pwd          readlink     realpath     sed          seq
+sha1sum      sha224sum    sha256sum    sha384sum    sha512sum    shuf
+split        stat         sum          tac          tail         tar
+test         touch        tr           true         truncate     tsort
+unexpand     uniq         unlink       uptime       wc           which
+winfo        wtop         xargs        yes
 ```
-
-> 标记 `?` 的命令在严格模式下可能有 PowerShell 同名函数，但通常不会造成冲突。保守起见可都加 `.exe`。
 
 ---
 
@@ -131,12 +129,11 @@ opencode 通过 `pwsh -Command` 执行命令时，其命令解析行为与用户
 ### 禁止
 
 ```
-Get-ChildItem     ❌  →  ls.exe     ✅ 或 dir      ✅
+Get-ChildItem     ❌  →  ls.exe     ✅
 Select-String     ❌  →  grep       ✅
 Select-Object     ❌  →  sort.exe   ✅
 Where-Object      ❌  →  grep       ✅
-ForEach-Object    ❌  →  while/for  ✅
-Measure-Command   ❌  →  time       ✅（部分支持）
+ForEach-Object    ❌  →  for/while  ✅
 Start-Sleep       ❌  →  sleep.exe  ✅
 Write-Output      ❌  →  echo.exe   ✅
 Get-Content       ❌  →  cat.exe    ✅

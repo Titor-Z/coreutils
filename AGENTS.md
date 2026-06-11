@@ -2,13 +2,18 @@
 
 ## changelog
 
-### v2026.6.10 — 2026-06-12
+### v2026.6.12 — 2026-06-12
 
-- docs: 创建 opencode skill `.opencode/skills/coreutils/SKILL.md`（完整命令参考 + 冲突表 + TTY 差异）— [fceba29]
-- docs: 精简 instruction `~/.config/opencode/docs/coreutils.md`，改为仅含使用规则
-- feat: 新建 AGENTS.md 规范文档（changelog/taolun/agents/项目进度/认知修正）— [fceba29]
+- docs: 创建 opencode skill `opencode/skills/coreutils/SKILL.md`（完整命令参考 + 冲突表 + TTY 差异）— [12aa911]
+- docs: 创建 `opencode/docs/coreutils.md`（instruction 源文件）— [12aa911]
+- docs: 创建 `INSTALL_OPENCODE.md`（用户安装指南）— [12aa911]
 - docs: `coreutils.exe --list` 增加分类标签 `[microsoft]`、`[uutils]`、`[custom]` — [fceba29]
 - feat: 添加 `la` 作为 `ls -A` 的别名 — [fceba29]
+
+### v2026.6.10 — 2026-06-10
+
+- feat: 新建 AGENTS.md 规范文档（changelog/taolun/agents/项目进度/认知修正）— [fceba29]
+- chore: 删除 `skills/` 旧目录（内容已迁移至 `opencode/`）— [12aa911]
 
 ### v2026.6.6 — 2026-06-10
 
@@ -82,6 +87,23 @@
 3. instruction 末尾加链接指向 skill，方便 opencode 按需加载
 
 **后续**：release 构建交给 GitHub Actions 自动处理。
+
+### 2026-06-12：opencode skill 作为交付物
+
+**用户需求**：重构文件结构，使 skill/instruction 能从 repo 直接复制到用户 `~/.config/opencode/`。
+
+**分析发现**：
+1. `.opencode/skills/coreutils/SKILL.md` 是项目级 skill，不会暴露给用户在其它项目使用
+2. 用户需要的是 `~/.config/opencode/skills/coreutils/SKILL.md`（全局 skill）和 `~/.config/opencode/docs/coreutils.md`（全局 instruction）
+3. 最佳交付方案：repo 中放一份在 `opencode/` 目录下，附 INSTALL_OPENCODE.md 说明复制步骤
+
+**实施**：
+1. 创建 `opencode/skills/coreutils/SKILL.md`（交付用 skill，与旧 `.opencode/` 版内容相同）
+2. 创建 `opencode/docs/coreutils.md`（交付用 instruction，更新了链接指向新 skill 路径）
+3. 创建 `INSTALL_OPENCODE.md`（用户安装指南，三步复制 + 配置 opencode.jsonc）
+4. 删除 `.opencode/skills/coreutils/`（项目级 skill 不再需要）
+
+**结论**：三份交付文件均就绪，用户只需从 GitHub 检出项目后按 INSTALL_OPENCODE.md 操作即可。
 
 ---
 
@@ -162,7 +184,9 @@ grep, ls, seq, sed, find, sleep, head, tail, sort, wc, cat
 - [x] 子模块拉取（SSH 代替 HTTPS）— [v2026.6.6]
 - [x] 创建 AGENTS.md 规范文档 — [fceba29]
 - [x] dfree.toml 配置文件支持
-- [x] opencode skill 文档（`.opencode/skills/coreutils/SKILL.md`）— [fceba29]
+- [x] opencode skill 文档（`opencode/skills/coreutils/SKILL.md`）— [12aa911]
+- [x] opencode instruction 交付文件（`opencode/docs/coreutils.md`）— [12aa911]
+- [x] 用户安装指南（`INSTALL_OPENCODE.md`）— [12aa911]
 
 [v2026.6.5]: https://github.com/Titor-Z/coreutils/tree/v2026.6.5
 [v2026.6.6]: https://github.com/Titor-Z/coreutils/tree/v2026.6.6
