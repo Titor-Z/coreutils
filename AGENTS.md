@@ -2,6 +2,14 @@
 
 ## changelog
 
+### v2026.6.10 — 2026-06-12
+
+- docs: 创建 opencode skill `.opencode/skills/coreutils/SKILL.md`（完整命令参考 + 冲突表 + TTY 差异）— [fceba29]
+- docs: 精简 instruction `~/.config/opencode/docs/coreutils.md`，改为仅含使用规则
+- feat: 新建 AGENTS.md 规范文档（changelog/taolun/agents/项目进度/认知修正）— [fceba29]
+- docs: `coreutils.exe --list` 增加分类标签 `[microsoft]`、`[uutils]`、`[custom]` — [fceba29]
+- feat: 添加 `la` 作为 `ls -A` 的别名 — [fceba29]
+
 ### v2026.6.6 — 2026-06-10
 
 - feat: `coreutils.exe --list` 输出增加分类标签 `[microsoft]`、`[uutils]`、`[custom]` — [8b7111a]
@@ -58,6 +66,22 @@
 - `[custom]` (5个)：dfree, la, which, winfo, wtop
 
 **后续**：创建 AGENTS.md，规范开发流程。
+
+### 2026-06-12：创建 opencode skill 与项目对比文档
+
+**用户需求**：需要维护一个 coreutils 的 opencode skill，包含命令参考、冲突规则、TTY 差异。
+
+**分析发现**：
+1. opencode skill 规范路径为 `.opencode/skills/<name>/SKILL.md`，需 YAML frontmatter（name + description）
+2. 已有 `~/.config/opencode/docs/coreutils.md` 作为 instruction 自动加载，但内容过简
+3. 最佳方案：instruction 只放必须遵守的核心规则，skill 放完整参考手册
+
+**实施**：
+1. 创建 `.opencode/skills/coreutils/SKILL.md`（200+ 行完整参考）
+2. 精简 `~/.config/opencode/docs/coreutils.md` 为使用规范（冲突表 + 禁止规则 + TTY 差异）
+3. instruction 末尾加链接指向 skill，方便 opencode 按需加载
+
+**后续**：release 构建交给 GitHub Actions 自动处理。
 
 ---
 
@@ -136,8 +160,9 @@ grep, ls, seq, sed, find, sleep, head, tail, sort, wc, cat
 - [x] `la` 别名（`ls -A`）— [v2026.6.6]
 - [x] `--list` 输出增加分类标签（microsoft / uutils / custom）— [v2026.6.6]
 - [x] 子模块拉取（SSH 代替 HTTPS）— [v2026.6.6]
-- [x] 创建 AGENTS.md 规范文档 — [v2026.6.6]
+- [x] 创建 AGENTS.md 规范文档 — [fceba29]
 - [x] dfree.toml 配置文件支持
+- [x] opencode skill 文档（`.opencode/skills/coreutils/SKILL.md`）— [fceba29]
 
 [v2026.6.5]: https://github.com/Titor-Z/coreutils/tree/v2026.6.5
 [v2026.6.6]: https://github.com/Titor-Z/coreutils/tree/v2026.6.6
