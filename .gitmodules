@@ -1,13 +1,13 @@
 [submodule "deps/coreutils"]
 	path = deps/coreutils
-	url = https://github.com/microsoft/uutils-coreutils.git
+	url = git@github.com:microsoft/uutils-coreutils.git
 [submodule "deps/findutils"]
 	path = deps/findutils
-	url = https://github.com/uutils/findutils.git
+	url = git@github.com:uutils/findutils.git
 [submodule "deps/grep"]
 	path = deps/grep
-	url = https://github.com/uutils/grep.git
+	url = git@github.com:uutils/grep.git
 [submodule "deps/sed"]
 	path = deps/sed
-	url = https://github.com/uutils/sed.git
+	url = git@github.com:uutils/sed.git
 

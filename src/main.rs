@@ -107,7 +107,7 @@ fn main() {
                 }
                 let mut out = io::stdout().lock();
                 for util in utils.keys() {
-                    if let Err(e) = writeln!(out, "{util}")
+                    if let Err(e) = writeln!(out, "{util:<20} [{}]", command_category(util))
                         && e.kind() != io::ErrorKind::BrokenPipe
                     {
                         let _ = writeln!(io::stderr(), "coreutils: {}", strip_errno(&e));
@@ -232,10 +232,19 @@ fn get_canonical_util_name(util_name: &str) -> &str {
         // uu_test aliases - '[' is an alias for test
         "[" => "test",
         "dir" => "ls",  // dir is an alias for ls
+        "la" => "ls",   // la is an alias for ls -A
         "vdir" => "ls", // vdir is an alias for ls
 
         // Default case - return the util name as is
         _ => util_name,
+    }
+}
+
+fn command_category(name: &str) -> &'static str {
+    match name {
+        "cmp" | "diff" | "find" | "grep" | "sed" | "tar" | "xargs" => "uutils",
+        "dfree" | "la" | "which" | "winfo" | "wtop" => "custom",
+        _ => "microsoft",
     }
 }
 

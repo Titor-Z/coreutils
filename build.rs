@@ -25,6 +25,7 @@ fn generate_uutils_map() {
     let mut has_sed = false;
     let mut has_diffutils = false;
     let mut has_tar = false;
+    let mut has_ls = false;
 
     for line in manifest.lines() {
         let Some(caps) = re.captures(line) else {
@@ -58,6 +59,9 @@ fn generate_uutils_map() {
         if util == "test" {
             entries.push(("[".into(), value.clone()));
         }
+        if util == "ls" {
+            has_ls = true;
+        }
         entries.push((util.clone(), value));
     }
 
@@ -81,6 +85,10 @@ fn generate_uutils_map() {
 
     if has_tar {
         entries.push(("tar".into(), "(tar_uumain, tar_uu_app)".into()));
+    }
+
+    if has_ls {
+        entries.push(("la".into(), "(ls::uumain, ls::uu_app)".into()));
     }
 
     entries.push(("dfree".into(), "(dfree_uumain, dfree_uu_app)".into()));
