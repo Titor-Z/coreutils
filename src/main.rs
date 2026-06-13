@@ -42,9 +42,11 @@ Functions:
 
 Usage: {name} [function [arguments...]]
        {name} --list
+       {name} --list-raw
 
 {common_core_string}Options:
-      --list    lists all defined functions, one per row
+      --list      lists all defined functions, one per row (with category tags)
+      --list-raw  lists command names only, one per row (for scripting)
 
 Currently defined functions:
 
@@ -108,6 +110,22 @@ fn main() {
                 let mut out = io::stdout().lock();
                 for util in utils.keys() {
                     if let Err(e) = writeln!(out, "{util:<20} [{}]", command_category(util))
+                        && e.kind() != io::ErrorKind::BrokenPipe
+                    {
+                        let _ = writeln!(io::stderr(), "coreutils: {}", strip_errno(&e));
+                        process::exit(1);
+                    }
+                }
+                process::exit(0);
+            }
+            "--list-raw" => {
+                if args.next().is_some() {
+                    let _ = writeln!(io::stderr(), "coreutils: invalid argument");
+                    process::exit(1);
+                }
+                let mut out = io::stdout().lock();
+                for util in utils.keys() {
+                    if let Err(e) = writeln!(out, "{util}")
                         && e.kind() != io::ErrorKind::BrokenPipe
                     {
                         let _ = writeln!(io::stderr(), "coreutils: {}", strip_errno(&e));

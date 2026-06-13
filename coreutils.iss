@@ -99,13 +99,13 @@ begin
     ForceDirectories(g_AppBinDirPath);
     ForceDirectories(g_AppCmdDirPath);
 
-    if (not ExecAndCaptureOutput(g_CoreutilsExePath, '--list', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output)) or (ResultCode <> 0) then
+    if (not ExecAndCaptureOutput(g_CoreutilsExePath, '--list-raw', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output)) or (ResultCode <> 0) then
         RaiseException('Failed to execute coreutils.exe --list');
 
     for I := 0 to GetArrayLength(Output.StdOut) - 1 do
     begin
         Name := Trim(Output.StdOut[I]);
-        if (Name <> '') and (Name <> '[') then
+        if Name <> '' then
         begin
             if not CreateHardLink(g_AppBinDirPath + Name + '.exe', g_CoreutilsExePath, 0) then
                 RaiseException('Failed to create hardlink for ' + Name);
@@ -160,13 +160,15 @@ begin
 
     // Remove any and all paths pointing to our app.
     // This doubles as an uninstall path.
-    SetArrayLength(PathsAfter, GetArrayLength(PathsBefore) + 1);
+    SetArrayLength(PathsAfter, GetArrayLength(PathsBefore) + 2);
     Count := 0;
     for I := 0 to GetArrayLength(PathsBefore) - 1 do
     begin
         if I = AppPathIndex then
         begin
             PathsAfter[Count] := RemoveBackslashUnlessRoot(g_AppBinDirPath);
+            Count := Count + 1;
+            PathsAfter[Count] := RemoveBackslashUnlessRoot(g_AppDirPath);
             Count := Count + 1;
         end;
         if not PathStartsWith(PathsBefore[I], g_AppDirPath, True) then
