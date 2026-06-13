@@ -105,7 +105,8 @@ begin
     for I := 0 to GetArrayLength(Output.StdOut) - 1 do
     begin
         Name := Trim(Output.StdOut[I]);
-        if Name <> '' then
+        // 跳过 '[' 命令 — '[' 是 test 的别名，创建 [.exe / [.cmd 无实际意义
+        if (Name <> '') and (Name <> '[') then
         begin
             if not CreateHardLink(g_AppBinDirPath + Name + '.exe', g_CoreutilsExePath, 0) then
                 RaiseException('Failed to create hardlink for ' + Name);
