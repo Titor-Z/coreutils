@@ -3,6 +3,8 @@
 <p align="center">UNIX 风格命令工具集，原生 Windows 可执行文件。</p>
 
 <h3 align="center">
+  <a href="#install">Install</a>
+  <span> · </span>
   <a href="#usage">Usage</a>
   <span> · </span>
   <a href="#added-commands">Added commands</a>
@@ -12,77 +14,108 @@
   <a href="#windows-caveats">Windows caveats</a>
 </h3>
 
+<p align="center">
+  <a href="https://github.com/Titor-Z/coreutils/releases"><img src="https://img.shields.io/github/v/release/Titor-Z/coreutils" alt="Latest release"></a>
+  <a href="https://github.com/Titor-Z/coreutils/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/Titor-Z/coreutils/release.yml" alt="Build status"></a>
+</p>
+
 ---
 
 Fork of [microsoft/coreutils](https://github.com/microsoft/coreutils) 基础上扩展，
-集成了 [uutils/coreutils](https://github.com/uutils/coreutils)、
-[findutils](https://github.com/uutils/findutils)、[grep](https://github.com/uutils/grep)、
-[sed](https://github.com/uutils/sed)、[diffutils](https://github.com/uutils/diffutils)、
-以及 [tar](https://github.com/uutils/tar)，打包成一个多调用二进制文件。在 Windows 上原生运行，
+集成了 [uutils/findutils](https://github.com/uutils/findutils)、[uutils/grep](https://github.com/uutils/grep)、
+[uutils/sed](https://github.com/uutils/sed)、[uutils/diffutils](https://github.com/uutils/diffutils)、
+以及 [uutils/tar](https://github.com/uutils/tar)，打包成一个多调用二进制文件。在 Windows 上原生运行，
 无需 WSL / Cygwin / MSYS2。
 
-共 **85 个命令**，覆盖日常 Linux 命令行的绝大部分需求。
-
-**自用 fork，不提供官方安装包。**
+共 **88 个命令**（76 `[microsoft]` + 7 `[uutils]` + 5 `[custom]`），覆盖日常 Linux 命令行的绝大部分需求。
 
 <br/>
+
+## Install
+
+从 [GitHub Releases](https://github.com/Titor-Z/coreutils/releases) 下载最新安装包 `coreutils-Titor-Z.exe`（Inno Setup 安装器），安装后自动加入 PATH。
+
+也可以直接下载 `coreutils.exe` 放到任意目录使用。
+
+可用 `coreutils.exe --list` 查看所有命令，`coreutils.exe --list-raw` 供安装程序/脚本使用。
 
 ## Usage
 
 ```bash
 coreutils.exe <command> [args...]    # 直接使用
-coreutils.exe --list                  # 列出所有可用命令
+coreutils.exe --list                  # 列出所有可用命令（含分类标签）
+coreutils.exe --list-raw              # 仅命令名，每行一个，供脚本使用
 ```
 
-创建硬链接后可以直接当独立命令使用：
+安装器会自动创建硬链接，安装后可直接当独立命令使用：
 
 ```bash
-# 在 target\debug\ 目录下创建硬链接
-New-Item -ItemType HardLink -Path "sed.exe" -Target "coreutils.exe"
-New-Item -ItemType HardLink -Path "diff.exe" -Target "coreutils.exe"
-New-Item -ItemType HardLink -Path "tar.exe" -Target "coreutils.exe"
-New-Item -ItemType HardLink -Path "dfree.exe" -Target "coreutils.exe"
+sed --version
+diff -u a.txt b.txt
+dfree
 ```
 
 <br/>
 
 ## Added commands
 
-该 fork 在 Microsoft 原版 72 个命令的基础上增加了以下命令：
+该 fork 在 Microsoft 原版 76 个命令的基础上增加了以下命令：
 
 | Command | Source | Description |
 | ------- | ------ | ----------- |
-| `sed` | [uutils/sed](https://github.com/uutils/sed) | 流编辑器，支持 `s/pattern/replace/`、`-n`、`/address/` 等标准功能 |
+| `find` | [uutils/findutils](https://github.com/uutils/findutils) | 文件搜索，支持 `-name`、`-type`、`-exec` 等标准功能 |
+| `grep` | [uutils/grep](https://github.com/uutils/grep) | 文本搜索，支持 `-r`、`-i`、`-E`（ERE）、`-v` 等 |
+| `sed` | [uutils/sed](https://github.com/uutils/sed) | 流编辑器，支持 `s/pattern/replace/`、`-n`、地址范围等 |
 | `diff` | [uutils/diffutils](https://github.com/uutils/diffutils) | 文件差异比较，支持 unified diff (`-u`) |
 | `cmp` | [uutils/diffutils](https://github.com/uutils/diffutils) | 字节级文件比较 |
 | `tar` | [uutils/tar](https://github.com/uutils/tar) | 归档工具，支持 create / list / extract |
-| `dfree` | 自定义 | 实时内存 & 磁盘使用率监控，3 秒刷新，彩色进度条显示 |
-| `winfo` | 自定义 | 系统信息显示，类似 neofetch，显示 OS、内核、运行时间、Shell、CPU、内存、磁盘 |
+| `dfree` | 自定义 | TUI 磁盘分析器（ratatui），支持磁盘分组、文件分类统计、大文件浏览、toml 可配置 |
+| `winfo` | 自定义 | 系统信息显示（neofetch-like），显示 OS、BIOS、CPU、内存、NIC 等信息 |
+| `wtop` | 自定义 | 进程监视器 TUI（ratatui），实时显示进程列表、CPU/内存占用 |
+| `which` | 自定义 | PATH 查找，支持 PATHEXT 和 `-a` 参数 |
+| `la` | 别名 | 等价于 `ls -A` |
 
-### dfree
+### dfree（TUI 磁盘分析器）
 
-实时显示物理内存、虚拟内存（Swap）和各硬盘分区的使用情况：
-
-```
- ┌─────────────────────────────────────────────┐
- │            dfree v1  内存 & 磁盘监控            │
- └─────────────────────────────────────────────┘
-
-  Memory  ███████████████████░░░░░  2.9 GiB / 3.9 GiB  74.5%
-  Swap    ████████████████░░░░░░░░  7.0 GiB / 10.7 GiB  65.6%
-
-  ── Disks ──────────────────────────────────
-  C: █████████████░░░░░░░░░░░░  61.1 GiB / 118.3 GiB  51.7%
-  D: ██████░░░░░░░░░░░░░░░░░░░  60.0 GiB / 200.0 GiB  30.0%
-
- ──────────────────────────────────────────────────
-  Refresh: 3s   Ctrl+C to exit
-```
+基于 ratatui 的全屏 TUI 工具，支持：
+- **磁盘分组**：按物理磁盘分组，展开查看分区详情
+- **文件分类**：统计各目录下按类型（文档、图片、视频、代码等）分布
+- **大文件浏览**：按大小排序，快速定位占用空间最多的文件
+- **toml 配置**：通过 `dfree.toml` 自定义扫描路径和文件类型规则
 
 ```bash
-coreutils.exe dfree          # 默认 3 秒刷新
-coreutils.exe dfree -n 5     # 5 秒刷新
-dfree.exe                    # 硬链接后直接跑
+dfree                    # 启动 TUI
+dfree --help             # 查看所有选项
+```
+
+### winfo（系统信息）
+
+类似 neofetch 的系统信息展示，显示：
+- OS 版本、内核、运行时间
+- BIOS 厂商/版本/日期
+- CPU 型号、核心数、频率
+- 内存容量、频率
+- 网络适配器信息
+
+```bash
+winfo
+```
+
+### wtop（进程监视器 TUI）
+
+基于 ratatui 的实时进程监视器，类似 htop：
+
+```bash
+wtop                     # 启动 TUI
+```
+
+### which（PATH 查找）
+
+查找可执行文件在 PATH 中的位置：
+
+```bash
+which git                # 查找 git
+which -a node            # 列出所有匹配
 ```
 
 <br/>
@@ -142,6 +175,7 @@ Legend: ✅ ships and works · ⚠️ ships but conflicts with a built-in · �
 | `tee`      |  ✅  |       ⚠️        | |
 | `timeout`  |  🛑  |       🛑        | Relies on `kill`'s functionality |
 | `uptime`   |  ✅  |       ⚠️        | |
+| `which`    |  ✅  |       ⚠️        | PowerShell has `which` as alias for `Get-Command` |
 | `whoami`   |  🛑  |       🛑        | Conflicts with the built-in Windows command |
 
 <br/>
