@@ -158,7 +158,7 @@ Legend: ✅ ships and works · ⚠️ ships but conflicts with a built-in · �
 | `dir`      |  🛑  |       🛑        | Conflicts with the built-in DOS command |
 | `echo`     |  ⚠️  |       ⚠️        | |
 | `expand`   |  🛑  |       🛑        | Conflicts with the built-in DOS command |
-| `find`     |  ✅  |       ✅        | Integrated port of the original DOS command |
+| `find`     |  ✅  |       ✅        | uutils/findutils + ntfind 包装，支持 `-name`、`-type`、`-exec` 等 |
 | `hostname` |  ✅  |       ✅        | Superset of the Windows built-in |
 | `kill`     |  🛑  |       🛑        | Unavailable due to lack of signals on Windows; Implementing a form of SIGTERM/SIGKILL may be possible in the future however |
 | `ls`       |  ✅  |       ⚠️        | |
