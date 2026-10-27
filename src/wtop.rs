@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::io;
 use std::time::{Duration, Instant};
@@ -22,6 +22,8 @@ const TH32CS_SNAPPROCESS: DWORD = 0x00000002;
 const PROCESS_QUERY_LIMITED_INFORMATION: DWORD = 0x1000;
 const PROCESS_TERMINATE: DWORD = 0x0001;
 const INVALID_HANDLE_VALUE: isize = -1;
+const CONN_REFRESH_TICKS: u32 = 3;
+const DISK_REFRESH_TICKS: u32 = 15;
 
 #[allow(non_snake_case)]
 #[repr(C)]
@@ -329,10 +331,8 @@ fn system_cpu_pct(prev: &SysCpuSnap, cur: &SysCpuSnap, ncpus: DWORD) -> f64 {
     (pct / ncpus as f64).min(100.0)
 }
 
-#[derive(Clone)]
 struct ProcInfo {
     pid: DWORD,
-    name: String,
     mem: u64,
     threads: DWORD,
     raw_total: u64,
@@ -341,45 +341,63 @@ struct ProcInfo {
     ports: String,
 }
 
+struct CachedEntry {
+    handle: HANDLE,
+    name: String,
+}
+
 struct HandleCache {
-    handles: HashMap<DWORD, HANDLE>,
+    entries: HashMap<DWORD, CachedEntry>,
 }
 
 impl HandleCache {
     fn new() -> Self {
-        HandleCache { handles: HashMap::new() }
+        HandleCache { entries: HashMap::new() }
     }
 
-    fn get(&mut self, pid: DWORD) -> Option<HANDLE> {
-        if let Some(&h) = self.handles.get(&pid) {
-            return if h != 0 { Some(h) } else { None };
+    fn ensure_open(&mut self, pid: DWORD, fallback_utf16: &[u16]) -> HANDLE {
+        if let Some(entry) = self.entries.get(&pid) {
+            return entry.handle;
         }
         let h = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
         if h != 0 && h != INVALID_HANDLE_VALUE {
-            self.handles.insert(pid, h);
-            Some(h)
+            let name = get_process_path(h)
+                .unwrap_or_else(|| String::from_utf16_lossy(fallback_utf16));
+            self.entries.insert(pid, CachedEntry { handle: h, name });
+            h
         } else {
-            self.handles.insert(pid, 0);
-            None
+            let name = String::from_utf16_lossy(fallback_utf16);
+            self.entries.insert(pid, CachedEntry { handle: 0, name });
+            0
         }
     }
 
-    fn retain(&mut self, active_pids: &[DWORD]) {
-        let mut dead = Vec::new();
-        for (&pid, &h) in &self.handles {
-            if h != 0 && !active_pids.contains(&pid) {
-                unsafe { CloseHandle(h); }
-                dead.push(pid);
+    fn get_handle(&self, pid: DWORD) -> Option<HANDLE> {
+        self.entries.get(&pid).and_then(|e| if e.handle != 0 { Some(e.handle) } else { None })
+    }
+
+    fn name_of(&self, pid: DWORD) -> &str {
+        self.entries.get(&pid).map(|e| e.name.as_str()).unwrap_or("")
+    }
+
+    fn retain(&mut self, active_pids: &HashSet<DWORD>) {
+        self.entries.retain(|&pid, entry| {
+            if active_pids.contains(&pid) {
+                true
+            } else {
+                if entry.handle != 0 {
+                    unsafe { CloseHandle(entry.handle); }
+                }
+                false
             }
-        }
-        for pid in dead { self.handles.remove(&pid); }
+        });
     }
 }
 
 impl Drop for HandleCache {
     fn drop(&mut self) {
-        for (_, h) in &self.handles {
-            if *h != 0 { unsafe { CloseHandle(*h); } }
+        for entry in self.entries.values() {
+            if entry.handle != 0 { unsafe { CloseHandle(entry.handle); } }
         }
     }
 }
@@ -392,10 +410,10 @@ fn get_process_path(h: HANDLE) -> Option<String> {
     Some(String::from_utf16_lossy(&buf[..len as usize]))
 }
 
-fn enumerate_procs(cache: &mut HandleCache) -> Vec<ProcInfo> {
-    let mut list = Vec::new();
+fn enumerate_procs(cache: &mut HandleCache, out: &mut Vec<ProcInfo>) {
+    out.clear();
     let snap = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
-    if snap == INVALID_HANDLE_VALUE { return list; }
+    if snap == INVALID_HANDLE_VALUE { return; }
 
     let mut entry = PROCESSENTRY32W {
         dwSize: size_of::<PROCESSENTRY32W>() as DWORD,
@@ -414,11 +432,11 @@ fn enumerate_procs(cache: &mut HandleCache) -> Vec<ProcInfo> {
     while ok {
         let pid = entry.th32ProcessID;
         let exe_len = entry.szExeFile.iter().position(|&c| c == 0).unwrap_or(260);
-        let exe_name = String::from_utf16_lossy(&entry.szExeFile[..exe_len]);
         let threads = entry.cntThreads;
 
-        if let Some(h) = cache.get(pid) {
-            let name = get_process_path(h).unwrap_or(exe_name);
+        let h = cache.ensure_open(pid, &entry.szExeFile[..exe_len]);
+
+        if h != 0 {
             let mut pmc = PROCESS_MEMORY_COUNTERS {
                 cb: size_of::<PROCESS_MEMORY_COUNTERS>() as DWORD,
                 PageFaultCount: 0,
@@ -442,9 +460,8 @@ fn enumerate_procs(cache: &mut HandleCache) -> Vec<ProcInfo> {
             let mut user = FILETIME { dwLowDateTime: 0, dwHighDateTime: 0 };
             unsafe { GetProcessTimes(h, &mut creation, &mut exit, &mut kernel, &mut user); }
 
-            list.push(ProcInfo {
+            out.push(ProcInfo {
                 pid,
-                name,
                 mem: pmc.WorkingSetSize as u64,
                 threads,
                 raw_total: filetime_to_u64(&kernel) + filetime_to_u64(&user),
@@ -453,9 +470,8 @@ fn enumerate_procs(cache: &mut HandleCache) -> Vec<ProcInfo> {
                 ports: String::new(),
             });
         } else {
-            list.push(ProcInfo {
+            out.push(ProcInfo {
                 pid,
-                name: exe_name,
                 mem: 0,
                 threads,
                 raw_total: 0,
@@ -469,7 +485,6 @@ fn enumerate_procs(cache: &mut HandleCache) -> Vec<ProcInfo> {
     }
 
     unsafe { CloseHandle(snap); }
-    list
 }
 
 fn network_io() -> (u64, u64) {
@@ -487,8 +502,8 @@ fn network_io() -> (u64, u64) {
             (buf.as_ptr() as *const u8).add(4 + i as usize * size_of::<MIB_IFROW>()) as *const MIB_IFROW
         };
         let row = unsafe { std::ptr::read_unaligned(row_ptr) };
-        if row.dwType == 24 || row.dwType == 6 || row.dwType == 1 { continue; } // loopback, tunnel, software
-        if row.dwOperStatus != 1 { continue; } // 1 = IF_OPER_STATUS_UP
+        if row.dwType == 24 || row.dwType == 6 || row.dwType == 1 { continue; }
+        if row.dwOperStatus != 1 { continue; }
         total_in += row.dwInOctets as u64;
         total_out += row.dwOutOctets as u64;
     }
@@ -544,10 +559,18 @@ fn compute_cpu(procs: &mut [ProcInfo], prev: &HashMap<DWORD, u64>, dt_ms: u64) {
     }
 }
 
-fn sort_procs(procs: &mut [ProcInfo], sort_by: &str, reverse: bool) {
+fn sort_procs(procs: &mut [ProcInfo], sort_by: &str, reverse: bool, cache: &HandleCache) {
+    let name_of = |pid: DWORD| cache.name_of(pid);
+    if sort_by == "name" {
+        if reverse {
+            procs.sort_by(|a, b| name_of(b.pid).cmp(name_of(a.pid)));
+        } else {
+            procs.sort_by(|a, b| name_of(a.pid).cmp(name_of(b.pid)));
+        }
+        return;
+    }
     let cmp: fn(&ProcInfo, &ProcInfo) -> std::cmp::Ordering = match sort_by {
         "pid" => |a, b| a.pid.cmp(&b.pid),
-        "name" => |a, b| a.name.cmp(&b.name),
         "mem" => |a, b| a.mem.cmp(&b.mem),
         "threads" => |a, b| a.threads.cmp(&b.threads),
         "conn" => |a, b| a.connections.cmp(&b.connections),
@@ -582,12 +605,12 @@ fn format_rate(bytes_per_sec: f64) -> String {
     format!("{:.1}{}", size, UNITS[unit_idx])
 }
 
-fn build_display(last_procs: &[ProcInfo], filter: &str, max_lines: usize) -> (Vec<ProcInfo>, usize) {
-    let mut v: Vec<ProcInfo> = if filter.is_empty() {
-        last_procs.to_vec()
+fn build_display<'a>(procs: &'a [ProcInfo], filter: &str, max_lines: usize, cache: &HandleCache) -> (Vec<&'a ProcInfo>, usize) {
+    let mut v: Vec<&'a ProcInfo> = if filter.is_empty() {
+        procs.iter().collect()
     } else {
         let lower = filter.to_ascii_lowercase();
-        last_procs.iter().filter(|p| p.name.to_ascii_lowercase().contains(&lower)).cloned().collect()
+        procs.iter().filter(|p| cache.name_of(p.pid).to_ascii_lowercase().contains(&lower)).collect()
     };
     let total = v.len();
     if max_lines < v.len() { v.truncate(max_lines); }
@@ -614,7 +637,8 @@ fn cpu_cell_color(pct: f64) -> Color {
     if pct > 50.0 { Color::Red } else if pct > 20.0 { Color::Yellow } else { Color::Reset }
 }
 
-fn render(frame: &mut Frame, procs: &[ProcInfo], sys_cpu: f64, used_phys: u64, total_phys: u64,
+fn render(frame: &mut Frame, procs: &[&ProcInfo], cache: &HandleCache,
+          sys_cpu: f64, used_phys: u64, total_phys: u64,
           mem_pct: f64, used_commit: u64, total_commit: u64, commit_pct: f64,
           disk_read_rate: f64, disk_write_rate: f64, disk_total_bytes: u64, disk_free_bytes: u64,
           net_in_rate: f64, net_out_rate: f64,
@@ -738,7 +762,7 @@ fn render(frame: &mut Frame, procs: &[ProcInfo], sys_cpu: f64, used_phys: u64, t
         let mut cells = vec![
             Cell::from(Line::from(format!("{}", p.pid)).alignment(Alignment::Right))
                 .style(if selected { Style::default() } else { Style::default().fg(Color::DarkGray) }),
-            Cell::from(p.name.as_str()),
+            Cell::from(cache.name_of(p.pid)),
         ];
         if p.cpu_pct > 0.1 {
             cells.push(
@@ -757,7 +781,7 @@ fn render(frame: &mut Frame, procs: &[ProcInfo], sys_cpu: f64, used_phys: u64, t
                 .style(if selected { Style::default() } else { Style::default().fg(Color::Green) })
         );
         cells.push(
-            Cell::from(Line::from(if p.ports.is_empty() { "-".to_string() } else { p.ports.clone() }).alignment(Alignment::Right))
+            Cell::from(Line::from(if p.ports.is_empty() { "-" } else { p.ports.as_str() }).alignment(Alignment::Right))
                 .style(if selected { Style::default() } else { Style::default().fg(Color::Blue) })
         );
         Row::new(cells)
@@ -799,12 +823,13 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
     let mut prev_net_in;
     let mut prev_net_out;
     let disk_io_fn = get_disk_io_fn();
-    let init_procs = enumerate_procs(&mut handle_cache);
-    for p in &init_procs {
+    let mut init_buf: Vec<ProcInfo> = Vec::with_capacity(512);
+    enumerate_procs(&mut handle_cache, &mut init_buf);
+    for p in &init_buf {
         prev_procs.insert(p.pid, p.raw_total);
     }
-    for p in &init_procs {
-        if let Some(h) = handle_cache.get(p.pid) {
+    for p in &init_buf {
+        if let Some(h) = handle_cache.get_handle(p.pid) {
             if let Some(f) = disk_io_fn {
                 let mut io = IO_COUNTERS {
                     ReadOperationCount: 0, WriteOperationCount: 0, OtherOperationCount: 0,
@@ -833,7 +858,8 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
     let mut table_state = TableState::default();
     table_state.select(Some(0));
 
-    let mut last_procs: Vec<ProcInfo> = Vec::new();
+    let mut last_procs: Vec<ProcInfo> = Vec::with_capacity(512);
+    let mut procs_buf: Vec<ProcInfo> = Vec::with_capacity(512);
     let mut last_sys_cpu = 0.0f64;
     let mut last_used_phys = 0u64;
     let mut last_total_phys = 0u64;
@@ -850,6 +876,9 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
     let mut status_msg: Option<(String, Instant)> = None;
     let mut filter = String::new();
     let mut filter_mode = false;
+    let mut tick_count: u32 = 0;
+    let mut conn_counts: HashMap<DWORD, u32> = HashMap::new();
+    let mut port_strings: HashMap<DWORD, String> = HashMap::new();
 
     loop {
         if matches!(event::poll(Duration::from_millis(100)), Ok(true)) {
@@ -899,12 +928,11 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
                                 } else {
                                     let lower = filter.to_ascii_lowercase();
                                     last_procs.iter()
-                                        .filter(|p| p.name.to_ascii_lowercase().contains(&lower))
+                                        .filter(|p| handle_cache.name_of(p.pid).to_ascii_lowercase().contains(&lower))
                                         .nth(idx).map(|p| p.pid)
                                 };
                                 if let Some(pid) = pid {
-                                    let proc_opt = last_procs.iter().find(|p| p.pid == pid);
-                                    let name = proc_opt.map(|p| p.name.clone()).unwrap_or_default();
+                                    let name = handle_cache.name_of(pid).to_string();
                                     match kill_process(pid) {
                                         Ok(()) => status_msg = Some((format!("Killed {} ({})", pid, name), Instant::now())),
                                         Err(e) => status_msg = Some((format!("{}", e), Instant::now())),
@@ -923,8 +951,17 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
                         MouseEventKind::ScrollUp => { move_sel(&mut table_state, -3); }
                         MouseEventKind::ScrollDown => { move_sel(&mut table_state, 3); }
                         MouseEventKind::Down(..) => {
-                            if m.row >= 4 {
-                                table_state.select(Some((m.row - 4) as usize));
+                            if m.row >= 6 {
+                                let display_len = if filter.is_empty() {
+                                    last_procs.len()
+                                } else {
+                                    let lower = filter.to_ascii_lowercase();
+                                    last_procs.iter()
+                                        .filter(|p| handle_cache.name_of(p.pid).to_ascii_lowercase().contains(&lower))
+                                        .count()
+                                };
+                                let idx = table_state.offset() + (m.row - 6) as usize;
+                                table_state.select(Some(idx.min(display_len.saturating_sub(1))));
                             }
                         }
                         _ => {}
@@ -935,8 +972,8 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
             }
 
             if needs_render && !last_procs.is_empty() {
-                sort_procs(&mut last_procs, sort_by, *reverse);
-                let (display_procs, _) = build_display(&last_procs, &filter, *max_lines);
+                sort_procs(&mut last_procs, sort_by, *reverse, &handle_cache);
+                let (display_procs, _) = build_display(&last_procs, &filter, *max_lines, &handle_cache);
                 let max_idx = display_procs.len().saturating_sub(1);
                 if let Some(idx) = table_state.selected() {
                     table_state.select(Some(idx.min(max_idx)));
@@ -946,7 +983,7 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
                 let status = status_msg.as_ref()
                     .and_then(|(s, t)| if t.elapsed() < Duration::from_secs(3) { Some(s.as_str()) } else { None });
                 let _ = terminal.draw(|f| {
-                    render(f, &display_procs, last_sys_cpu, last_used_phys, last_total_phys, last_mem_pct,
+                    render(f, &display_procs, &handle_cache, last_sys_cpu, last_used_phys, last_total_phys, last_mem_pct,
                            last_used_commit, last_total_commit, last_commit_pct,
                            last_disk_read_rate, last_disk_write_rate, last_disk_total, last_disk_free,
                            last_net_in_rate, last_net_out_rate,
@@ -958,27 +995,42 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
 
         if last_refresh.elapsed() >= sleep_dur {
             let now = Instant::now();
+            tick_count += 1;
 
             let cur_cpu = system_cpu_snapshot();
             let sys_cpu = system_cpu_pct(&prev_cpu, &cur_cpu, ncpus);
             prev_cpu = cur_cpu;
 
-            let mut procs = enumerate_procs(&mut handle_cache);
-            compute_cpu(&mut procs, &prev_procs, dt_ms);
+            enumerate_procs(&mut handle_cache, &mut procs_buf);
+            compute_cpu(&mut procs_buf, &prev_procs, dt_ms);
 
             prev_procs.clear();
-            for p in &procs {
+            for p in &procs_buf {
                 prev_procs.insert(p.pid, p.raw_total);
             }
-            handle_cache.retain(&procs.iter().map(|p| p.pid).collect::<Vec<_>>());
 
-            let (conn_counts, port_strings) = get_connection_info();
-            for p in &mut procs {
-                p.connections = conn_counts.get(&p.pid).copied().unwrap_or(0);
-                p.ports = port_strings.get(&p.pid).cloned().unwrap_or_default();
+            let active_set: HashSet<DWORD> = procs_buf.iter().map(|p| p.pid).collect();
+            handle_cache.retain(&active_set);
+
+            let mut conns_updated = false;
+            if tick_count % CONN_REFRESH_TICKS == 1 {
+                let (cc, ps) = get_connection_info();
+                conn_counts = cc;
+                port_strings = ps;
+                conns_updated = true;
+            }
+            if conns_updated {
+                for p in &mut procs_buf {
+                    p.connections = conn_counts.get(&p.pid).copied().unwrap_or(0);
+                    p.ports = port_strings.get(&p.pid).cloned().unwrap_or_default();
+                }
+            } else {
+                for p in &mut procs_buf {
+                    p.connections = conn_counts.get(&p.pid).copied().unwrap_or(0);
+                }
             }
 
-            sort_procs(&mut procs, sort_by, *reverse);
+            sort_procs(&mut procs_buf, sort_by, *reverse, &handle_cache);
 
             let (total_phys, avail_phys, total_page, avail_page) = memory_status();
             let used_phys = total_phys - avail_phys;
@@ -986,11 +1038,10 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
             let mem_pct = if total_phys > 0 { used_phys as f64 / total_phys as f64 * 100.0 } else { 0.0 };
             let commit_pct = if total_page > 0 { used_commit as f64 / total_page as f64 * 100.0 } else { 0.0 };
 
-            // Disk I/O
             let mut disk_read = 0u64;
             let mut disk_write = 0u64;
-            for p in &procs {
-                if let Some(h) = handle_cache.get(p.pid) {
+            for p in &procs_buf {
+                if let Some(h) = handle_cache.get_handle(p.pid) {
                     if let Some(dio) = disk_io_fn {
                         let mut io = IO_COUNTERS {
                             ReadOperationCount: 0, WriteOperationCount: 0, OtherOperationCount: 0,
@@ -1013,12 +1064,12 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
             prev_disk_read = disk_read;
             prev_disk_write = disk_write;
 
-            // Disk space
-            let (disk_total, disk_free) = disk_space();
-            last_disk_total = disk_total;
-            last_disk_free = disk_free;
+            if tick_count % DISK_REFRESH_TICKS == 1 {
+                let (disk_total, disk_free) = disk_space();
+                last_disk_total = disk_total;
+                last_disk_free = disk_free;
+            }
 
-            // Network IO
             let (net_in, net_out) = network_io();
             last_net_in_rate = if prev_net_in > 0 && dt_secs > 0.0 {
                 (net_in.wrapping_sub(prev_net_in)) as f64 / dt_secs
@@ -1032,8 +1083,7 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
             dt_ms = now.duration_since(last_refresh).as_millis() as u64;
             last_refresh = now;
 
-            // Store for immediate re-render on key events
-            last_procs = procs;
+            std::mem::swap(&mut last_procs, &mut procs_buf);
             last_sys_cpu = sys_cpu;
             last_used_phys = used_phys;
             last_total_phys = total_phys;
@@ -1042,7 +1092,7 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
             last_total_commit = total_page;
             last_commit_pct = commit_pct;
 
-            let (display_procs, _) = build_display(&last_procs, &filter, *max_lines);
+            let (display_procs, _) = build_display(&last_procs, &filter, *max_lines, &handle_cache);
 
             let max_idx = display_procs.len().saturating_sub(1);
             if let Some(idx) = table_state.selected() {
@@ -1054,7 +1104,7 @@ fn run(terminal: &mut DefaultTerminal, interval: u64, sort_by: &mut String, reve
             let status = status_msg.as_ref()
                 .and_then(|(s, t)| if t.elapsed() < Duration::from_secs(3) { Some(s.as_str()) } else { None });
             let _ = terminal.draw(|f| {
-                render(f, &display_procs, last_sys_cpu, last_used_phys, last_total_phys, last_mem_pct,
+                render(f, &display_procs, &handle_cache, last_sys_cpu, last_used_phys, last_total_phys, last_mem_pct,
                        last_used_commit, last_total_commit, last_commit_pct,
                        last_disk_read_rate, last_disk_write_rate, last_disk_total, last_disk_free,
                        last_net_in_rate, last_net_out_rate,
