@@ -3422,14 +3422,14 @@ dependencies = [
 
 [[package]]
 name = "uu_grep"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clap",
  "glob",
  "memchr",
  "onig",
  "onig_sys",
- "uucore 0.8.0",
+ "uucore 0.12.0",
  "walkdir",
 ]
 
@@ -4045,26 +4045,6 @@ dependencies = [
 
 [[package]]
 name = "uucore"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07d779636d827cde4100f0e65ff3fd23b0b1f1195055475c6e6813d425f30c8e"
-dependencies = [
- "clap",
- "fluent",
- "fluent-bundle",
- "fluent-syntax",
- "nix 0.31.3",
- "os_display",
- "rustc-hash",
- "rustix 1.1.4",
- "thiserror 2.0.18",
- "unic-langid",
- "uucore_procs 0.8.0",
- "wild",
-]
-
-[[package]]
-name = "uucore"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "069b34217c27f611e1589f540f58118dbf226a9e407d38ab472052ff075a1dc2"
@@ -4166,16 +4146,6 @@ dependencies = [
  "uucore_procs 0.12.0",
  "wild",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "uucore_procs"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da865e8a648b260dbd89fca76d0801995877ab27a4e259b6dec30ba9743b86ab"
-dependencies = [
- "proc-macro2",
- "quote",
 ]
 
 [[package]]
