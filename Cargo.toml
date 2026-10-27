@@ -137,7 +137,7 @@ diffutils = { package = "diffutils", path = "deps/diffutils" }
 tar = { package = "uu_tar", path = "deps/tar/src/uu/tar" }
 
 # Custom: wtop (Windows process monitor TUI)
-ratatui = "0.29"
+ratatui = "0.30"
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
 

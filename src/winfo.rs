@@ -4,7 +4,7 @@ use std::io::{self, Read, Write};
 use ratatui::{
     Frame,
     layout::{Constraint, Layout},
-    style::{Color, Style, Stylize},
+    style::{Color, Style},
     text::{Line, Span},
     widgets::Paragraph,
 };

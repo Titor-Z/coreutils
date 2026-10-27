@@ -9,7 +9,7 @@ use ratatui::{
     DefaultTerminal,
     Frame,
     layout::{Alignment, Constraint, Layout},
-    style::{Color, Style, Stylize},
+    style::{Color, Style},
     text::{Line, Span},
     widgets::{Block, BorderType, Cell, Paragraph, Row, Table, TableState},
 };
