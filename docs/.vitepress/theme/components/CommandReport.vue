@@ -144,6 +144,7 @@ const filteredFiles = computed(() => rows.value.reduce((s, c) => s + c.files, 0)
           <tr>
             <th class="c-idx">#</th>
             <th>命令</th>
+            <th class="c-desc">说明</th>
             <th>分类</th>
             <th class="c-num">行数</th>
             <th class="c-bar">占最大命令</th>
@@ -155,6 +156,7 @@ const filteredFiles = computed(() => rows.value.reduce((s, c) => s + c.files, 0)
           <tr v-for="(c, i) in rows" :key="c.name">
             <td class="c-idx">{{ i + 1 }}</td>
             <td class="c-name">{{ c.name }}</td>
+            <td class="c-desc">{{ c.desc }}</td>
             <td>
               <span class="r-tag" :style="{ background: COLOR[c.category], color: c.category === 'microsoft' ? '#0e0e0e' : '#fff' }">
                 {{ LABEL[c.category] }}
@@ -196,6 +198,7 @@ const filteredFiles = computed(() => rows.value.reduce((s, c) => s + c.files, 0)
   --paper: #f2f0e6;
   --grey: #6f6b60;
   --mono: 'JetBrains Mono', 'Cascadia Code', 'SF Mono', Consolas, monospace;
+  --sans: 'Helvetica Neue', 'Segoe UI', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
   color: var(--ink);
 }
 
@@ -393,6 +396,7 @@ const filteredFiles = computed(() => rows.value.reduce((s, c) => s + c.files, 0)
   padding: 7px 10px 7px 0;
   border-bottom: 1px solid #e3dfd2;
   vertical-align: middle;
+  line-height: 1.5;
 }
 
 .r-table tbody tr:hover td { background: #faf8f0; }
@@ -409,7 +413,14 @@ const filteredFiles = computed(() => rows.value.reduce((s, c) => s + c.files, 0)
   white-space: nowrap;
 }
 
-.c-name { font-weight: 600; }
+.c-name { font-weight: 600; white-space: nowrap; }
+
+.c-desc {
+  font-family: var(--sans);
+  color: #3a3a3a;
+  min-width: 160px;
+  line-height: 1.5;
+}
 
 .r-mini {
   display: block;
@@ -473,6 +484,10 @@ const filteredFiles = computed(() => rows.value.reduce((s, c) => s + c.files, 0)
   font-family: var(--mono);
   background: var(--paper);
   padding: 1px 4px;
+}
+
+@media (max-width: 900px) {
+  .c-desc { display: none; }
 }
 
 @media (max-width: 720px) {

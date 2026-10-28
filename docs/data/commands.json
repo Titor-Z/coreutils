@@ -12,6 +12,7 @@
     {
       "name": "sed",
       "category": "uutils",
+      "desc": "流编辑器，按脚本转换文本",
       "loc": 12331,
       "files": 14,
       "aliasOf": null,
@@ -20,6 +21,7 @@
     {
       "name": "find",
       "category": "uutils",
+      "desc": "按条件递归查找文件",
       "loc": 11190,
       "files": 29,
       "aliasOf": null,
@@ -28,6 +30,7 @@
     {
       "name": "ls",
       "category": "microsoft",
+      "desc": "列出目录内容",
       "loc": 6215,
       "files": 7,
       "aliasOf": null,
@@ -36,6 +39,7 @@
     {
       "name": "sort",
       "category": "microsoft",
+      "desc": "对行排序",
       "loc": 6079,
       "files": 13,
       "aliasOf": null,
@@ -44,6 +48,7 @@
     {
       "name": "diff",
       "category": "uutils",
+      "desc": "比较文件差异",
       "loc": 5732,
       "files": 8,
       "aliasOf": null,
@@ -52,6 +57,7 @@
     {
       "name": "cp",
       "category": "microsoft",
+      "desc": "复制文件或目录",
       "loc": 5200,
       "files": 10,
       "aliasOf": null,
@@ -60,6 +66,7 @@
     {
       "name": "od",
       "category": "microsoft",
+      "desc": "以八进制等格式转储二进制",
       "loc": 4263,
       "files": 16,
       "aliasOf": null,
@@ -68,6 +75,7 @@
     {
       "name": "split",
       "category": "microsoft",
+      "desc": "把文件切分成多个片段",
       "loc": 3685,
       "files": 10,
       "aliasOf": null,
@@ -76,6 +84,7 @@
     {
       "name": "tail",
       "category": "microsoft",
+      "desc": "输出文件末尾部分",
       "loc": 3557,
       "files": 13,
       "aliasOf": null,
@@ -84,6 +93,7 @@
     {
       "name": "df",
       "category": "microsoft",
+      "desc": "显示文件系统磁盘占用",
       "loc": 3320,
       "files": 9,
       "aliasOf": null,
@@ -92,6 +102,7 @@
     {
       "name": "grep",
       "category": "uutils",
+      "desc": "按模式搜索文本",
       "loc": 3249,
       "files": 7,
       "aliasOf": null,
@@ -100,6 +111,7 @@
     {
       "name": "numfmt",
       "category": "microsoft",
+      "desc": "数字与人类可读单位互转",
       "loc": 3170,
       "files": 8,
       "aliasOf": null,
@@ -108,6 +120,7 @@
     {
       "name": "date",
       "category": "microsoft",
+      "desc": "显示或设置日期时间",
       "loc": 2807,
       "files": 4,
       "aliasOf": null,
@@ -116,6 +129,7 @@
     {
       "name": "env",
       "category": "microsoft",
+      "desc": "在修改后的环境中运行程序",
       "loc": 2613,
       "files": 8,
       "aliasOf": null,
@@ -124,6 +138,7 @@
     {
       "name": "dfree",
       "category": "custom",
+      "desc": "磁盘占用交互分析器（TUI）",
       "loc": 2146,
       "files": 2,
       "aliasOf": null,
@@ -132,6 +147,7 @@
     {
       "name": "mv",
       "category": "microsoft",
+      "desc": "移动或重命名文件",
       "loc": 2037,
       "files": 4,
       "aliasOf": null,
@@ -140,6 +156,7 @@
     {
       "name": "expr",
       "category": "microsoft",
+      "desc": "求值表达式",
       "loc": 1989,
       "files": 5,
       "aliasOf": null,
@@ -148,6 +165,7 @@
     {
       "name": "csplit",
       "category": "microsoft",
+      "desc": "按模式把文件切分成多段",
       "loc": 1920,
       "files": 6,
       "aliasOf": null,
@@ -156,6 +174,7 @@
     {
       "name": "stat",
       "category": "microsoft",
+      "desc": "显示文件元数据",
       "loc": 1826,
       "files": 2,
       "aliasOf": null,
@@ -164,6 +183,7 @@
     {
       "name": "fmt",
       "category": "microsoft",
+      "desc": "把段落重排为指定宽度",
       "loc": 1815,
       "files": 4,
       "aliasOf": null,
@@ -172,6 +192,7 @@
     {
       "name": "test",
       "category": "microsoft",
+      "desc": "求值条件表达式",
       "loc": 1808,
       "files": 8,
       "aliasOf": null,
@@ -180,6 +201,7 @@
     {
       "name": "xargs",
       "category": "uutils",
+      "desc": "由标准输入构造并执行命令",
       "loc": 1796,
       "files": 2,
       "aliasOf": null,
@@ -188,6 +210,7 @@
     {
       "name": "cut",
       "category": "microsoft",
+      "desc": "按字段或字符位置截取每行",
       "loc": 1766,
       "files": 4,
       "aliasOf": null,
@@ -196,6 +219,7 @@
     {
       "name": "head",
       "category": "microsoft",
+      "desc": "输出文件开头部分",
       "loc": 1766,
       "files": 5,
       "aliasOf": null,
@@ -204,6 +228,7 @@
     {
       "name": "pr",
       "category": "microsoft",
+      "desc": "分页排版后输出",
       "loc": 1716,
       "files": 2,
       "aliasOf": null,
@@ -212,6 +237,7 @@
     {
       "name": "rm",
       "category": "microsoft",
+      "desc": "删除文件或目录",
       "loc": 1698,
       "files": 4,
       "aliasOf": null,
@@ -220,6 +246,7 @@
     {
       "name": "du",
       "category": "microsoft",
+      "desc": "统计目录占用空间",
       "loc": 1646,
       "files": 2,
       "aliasOf": null,
@@ -228,6 +255,7 @@
     {
       "name": "wc",
       "category": "microsoft",
+      "desc": "统计行数、词数与字节数",
       "loc": 1603,
       "files": 7,
       "aliasOf": null,
@@ -236,6 +264,7 @@
     {
       "name": "tr",
       "category": "microsoft",
+      "desc": "转换或删除字符",
       "loc": 1338,
       "files": 6,
       "aliasOf": null,
@@ -244,6 +273,7 @@
     {
       "name": "touch",
       "category": "microsoft",
+      "desc": "更新时间戳或创建空文件",
       "loc": 1266,
       "files": 6,
       "aliasOf": null,
@@ -252,6 +282,7 @@
     {
       "name": "cmp",
       "category": "uutils",
+      "desc": "逐字节比较两个文件",
       "loc": 1215,
       "files": 1,
       "aliasOf": null,
@@ -260,6 +291,7 @@
     {
       "name": "join",
       "category": "microsoft",
+      "desc": "按关键字段连接两个已排序文件的行",
       "loc": 1195,
       "files": 2,
       "aliasOf": null,
@@ -268,6 +300,7 @@
     {
       "name": "wtop",
       "category": "custom",
+      "desc": "进程监视器（TUI）",
       "loc": 1173,
       "files": 1,
       "aliasOf": null,
@@ -276,6 +309,7 @@
     {
       "name": "winfo",
       "category": "custom",
+      "desc": "系统信息一览",
       "loc": 1136,
       "files": 1,
       "aliasOf": null,
@@ -284,6 +318,7 @@
     {
       "name": "ptx",
       "category": "microsoft",
+      "desc": "生成排列索引",
       "loc": 1097,
       "files": 2,
       "aliasOf": null,
@@ -292,6 +327,7 @@
     {
       "name": "cat",
       "category": "microsoft",
+      "desc": "连接文件并输出到标准输出",
       "loc": 990,
       "files": 5,
       "aliasOf": null,
@@ -300,6 +336,7 @@
     {
       "name": "base32",
       "category": "microsoft",
+      "desc": "base32 编解码",
       "loc": 981,
       "files": 3,
       "aliasOf": null,
@@ -308,6 +345,7 @@
     {
       "name": "seq",
       "category": "microsoft",
+      "desc": "生成数字序列",
       "loc": 968,
       "files": 6,
       "aliasOf": null,
@@ -316,6 +354,7 @@
     {
       "name": "shuf",
       "category": "microsoft",
+      "desc": "随机打乱行的顺序",
       "loc": 905,
       "files": 5,
       "aliasOf": null,
@@ -324,6 +363,7 @@
     {
       "name": "tar",
       "category": "uutils",
+      "desc": "打包与解包归档",
       "loc": 904,
       "files": 9,
       "aliasOf": null,
@@ -332,6 +372,7 @@
     {
       "name": "uniq",
       "category": "microsoft",
+      "desc": "去除相邻重复行",
       "loc": 871,
       "files": 2,
       "aliasOf": null,
@@ -340,6 +381,7 @@
     {
       "name": "unexpand",
       "category": "microsoft",
+      "desc": "把空格转为制表符",
       "loc": 813,
       "files": 2,
       "aliasOf": null,
@@ -348,6 +390,7 @@
     {
       "name": "fold",
       "category": "microsoft",
+      "desc": "按宽度折行",
       "loc": 741,
       "files": 2,
       "aliasOf": null,
@@ -356,6 +399,7 @@
     {
       "name": "mktemp",
       "category": "microsoft",
+      "desc": "创建临时文件或目录",
       "loc": 690,
       "files": 2,
       "aliasOf": null,
@@ -364,6 +408,7 @@
     {
       "name": "nl",
       "category": "microsoft",
+      "desc": "给行加编号后输出",
       "loc": 606,
       "files": 3,
       "aliasOf": null,
@@ -372,6 +417,7 @@
     {
       "name": "truncate",
       "category": "microsoft",
+      "desc": "把文件截断或扩展到指定长度",
       "loc": 594,
       "files": 2,
       "aliasOf": null,
@@ -380,6 +426,7 @@
     {
       "name": "tac",
       "category": "microsoft",
+      "desc": "逆序输出行",
       "loc": 569,
       "files": 3,
       "aliasOf": null,
@@ -388,6 +435,7 @@
     {
       "name": "ln",
       "category": "microsoft",
+      "desc": "创建硬链接或符号链接",
       "loc": 525,
       "files": 2,
       "aliasOf": null,
@@ -396,6 +444,7 @@
     {
       "name": "was",
       "category": "custom",
+      "desc": "管理 PowerShell 别名",
       "loc": 469,
       "files": 1,
       "aliasOf": null,
@@ -404,6 +453,7 @@
     {
       "name": "tee",
       "category": "microsoft",
+      "desc": "同时写入文件与标准输出",
       "loc": 432,
       "files": 3,
       "aliasOf": null,
@@ -412,6 +462,7 @@
     {
       "name": "comm",
       "category": "microsoft",
+      "desc": "比较两个已排序文件的行",
       "loc": 428,
       "files": 2,
       "aliasOf": null,
@@ -420,6 +471,7 @@
     {
       "name": "paste",
       "category": "microsoft",
+      "desc": "按列合并多个文件的行",
       "loc": 415,
       "files": 2,
       "aliasOf": null,
@@ -428,6 +480,7 @@
     {
       "name": "tsort",
       "category": "microsoft",
+      "desc": "拓扑排序",
       "loc": 405,
       "files": 2,
       "aliasOf": null,
@@ -436,6 +489,7 @@
     {
       "name": "uptime",
       "category": "microsoft",
+      "desc": "显示开机时长与平均负载",
       "loc": 400,
       "files": 5,
       "aliasOf": null,
@@ -444,6 +498,7 @@
     {
       "name": "mkdir",
       "category": "microsoft",
+      "desc": "创建目录",
       "loc": 388,
       "files": 2,
       "aliasOf": null,
@@ -452,6 +507,7 @@
     {
       "name": "realpath",
       "category": "microsoft",
+      "desc": "解析为绝对规范路径",
       "loc": 347,
       "files": 2,
       "aliasOf": null,
@@ -460,6 +516,7 @@
     {
       "name": "factor",
       "category": "microsoft",
+      "desc": "质因数分解",
       "loc": 270,
       "files": 2,
       "aliasOf": null,
@@ -468,6 +525,7 @@
     {
       "name": "echo",
       "category": "microsoft",
+      "desc": "输出一行文本",
       "loc": 264,
       "files": 2,
       "aliasOf": null,
@@ -476,6 +534,7 @@
     {
       "name": "pathchk",
       "category": "microsoft",
+      "desc": "检查路径名是否有效且可移植",
       "loc": 264,
       "files": 2,
       "aliasOf": null,
@@ -484,6 +543,7 @@
     {
       "name": "free",
       "category": "custom",
+      "desc": "显示内存与交换区用量",
       "loc": 260,
       "files": 1,
       "aliasOf": null,
@@ -492,6 +552,7 @@
     {
       "name": "dirname",
       "category": "microsoft",
+      "desc": "去掉文件名，只保留目录部分",
       "loc": 227,
       "files": 2,
       "aliasOf": null,
@@ -500,6 +561,7 @@
     {
       "name": "rmdir",
       "category": "microsoft",
+      "desc": "删除空目录",
       "loc": 215,
       "files": 2,
       "aliasOf": null,
@@ -508,6 +570,7 @@
     {
       "name": "sum",
       "category": "microsoft",
+      "desc": "计算 BSD 校验和",
       "loc": 207,
       "files": 2,
       "aliasOf": null,
@@ -516,6 +579,7 @@
     {
       "name": "printf",
       "category": "microsoft",
+      "desc": "按格式输出",
       "loc": 204,
       "files": 3,
       "aliasOf": null,
@@ -524,6 +588,7 @@
     {
       "name": "readlink",
       "category": "microsoft",
+      "desc": "打印符号链接指向的路径",
       "loc": 198,
       "files": 2,
       "aliasOf": null,
@@ -532,6 +597,7 @@
     {
       "name": "yes",
       "category": "microsoft",
+      "desc": "不停重复输出指定字符串",
       "loc": 188,
       "files": 2,
       "aliasOf": null,
@@ -540,6 +606,7 @@
     {
       "name": "pwd",
       "category": "microsoft",
+      "desc": "显示当前工作目录",
       "loc": 184,
       "files": 2,
       "aliasOf": null,
@@ -548,6 +615,7 @@
     {
       "name": "hostname",
       "category": "microsoft",
+      "desc": "显示主机名",
       "loc": 175,
       "files": 2,
       "aliasOf": null,
@@ -556,6 +624,7 @@
     {
       "name": "which",
       "category": "custom",
+      "desc": "在 PATH 中定位可执行文件",
       "loc": 155,
       "files": 2,
       "aliasOf": null,
@@ -564,6 +633,7 @@
     {
       "name": "basename",
       "category": "microsoft",
+      "desc": "去掉目录前缀，只保留文件名",
       "loc": 153,
       "files": 2,
       "aliasOf": null,
@@ -572,6 +642,7 @@
     {
       "name": "cksum",
       "category": "microsoft",
+      "desc": "计算 CRC 校验和与字节数",
       "loc": 145,
       "files": 2,
       "aliasOf": null,
@@ -580,6 +651,7 @@
     {
       "name": "nproc",
       "category": "microsoft",
+      "desc": "显示可用处理器数量",
       "loc": 142,
       "files": 2,
       "aliasOf": null,
@@ -588,6 +660,7 @@
     {
       "name": "basenc",
       "category": "microsoft",
+      "desc": "按指定 base 做编解码",
       "loc": 97,
       "files": 2,
       "aliasOf": null,
@@ -596,6 +669,7 @@
     {
       "name": "printenv",
       "category": "microsoft",
+      "desc": "打印环境变量",
       "loc": 82,
       "files": 2,
       "aliasOf": null,
@@ -604,6 +678,7 @@
     {
       "name": "sleep",
       "category": "microsoft",
+      "desc": "延时指定时长",
       "loc": 80,
       "files": 2,
       "aliasOf": null,
@@ -612,6 +687,7 @@
     {
       "name": "true",
       "category": "microsoft",
+      "desc": "总是返回成功",
       "loc": 67,
       "files": 2,
       "aliasOf": null,
@@ -620,6 +696,7 @@
     {
       "name": "false",
       "category": "microsoft",
+      "desc": "总是返回失败",
       "loc": 62,
       "files": 2,
       "aliasOf": null,
@@ -628,6 +705,7 @@
     {
       "name": "link",
       "category": "microsoft",
+      "desc": "为文件创建硬链接",
       "loc": 59,
       "files": 2,
       "aliasOf": null,
@@ -636,6 +714,7 @@
     {
       "name": "unlink",
       "category": "microsoft",
+      "desc": "删除单个文件",
       "loc": 51,
       "files": 2,
       "aliasOf": null,
@@ -644,6 +723,7 @@
     {
       "name": "arch",
       "category": "microsoft",
+      "desc": "显示机器硬件架构",
       "loc": 41,
       "files": 2,
       "aliasOf": null,
@@ -652,6 +732,7 @@
     {
       "name": "b2sum",
       "category": "microsoft",
+      "desc": "计算 BLAKE2 校验和",
       "loc": 35,
       "files": 2,
       "aliasOf": null,
@@ -660,6 +741,7 @@
     {
       "name": "base64",
       "category": "microsoft",
+      "desc": "base64 编解码",
       "loc": 28,
       "files": 2,
       "aliasOf": null,
@@ -668,6 +750,7 @@
     {
       "name": "md5sum",
       "category": "microsoft",
+      "desc": "计算 MD5 校验和",
       "loc": 14,
       "files": 2,
       "aliasOf": null,
@@ -676,6 +759,7 @@
     {
       "name": "sha1sum",
       "category": "microsoft",
+      "desc": "计算 SHA-1 校验和",
       "loc": 14,
       "files": 2,
       "aliasOf": null,
@@ -684,6 +768,7 @@
     {
       "name": "sha224sum",
       "category": "microsoft",
+      "desc": "计算 SHA-224 校验和",
       "loc": 14,
       "files": 2,
       "aliasOf": null,
@@ -692,6 +777,7 @@
     {
       "name": "sha256sum",
       "category": "microsoft",
+      "desc": "计算 SHA-256 校验和",
       "loc": 14,
       "files": 2,
       "aliasOf": null,
@@ -700,6 +786,7 @@
     {
       "name": "sha384sum",
       "category": "microsoft",
+      "desc": "计算 SHA-384 校验和",
       "loc": 14,
       "files": 2,
       "aliasOf": null,
@@ -708,6 +795,7 @@
     {
       "name": "sha512sum",
       "category": "microsoft",
+      "desc": "计算 SHA-512 校验和",
       "loc": 14,
       "files": 2,
       "aliasOf": null,
@@ -716,6 +804,7 @@
     {
       "name": "[",
       "category": "microsoft",
+      "desc": "test 的方括号形式",
       "loc": 0,
       "files": 0,
       "aliasOf": "test",
@@ -724,6 +813,7 @@
     {
       "name": "la",
       "category": "custom",
+      "desc": "ls -A 的别名",
       "loc": 0,
       "files": 0,
       "aliasOf": "ls",
@@ -732,6 +822,7 @@
     {
       "name": "unwas",
       "category": "custom",
+      "desc": "删除 was 管理的别名",
       "loc": 0,
       "files": 0,
       "aliasOf": "was",
