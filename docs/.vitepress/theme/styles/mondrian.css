@@ -1,0 +1,87 @@
+:root {
+  --m-red: #dd0100;
+  --m-blue: #225095;
+  --m-yellow: #fac901;
+  --m-ink: #0e0e0e;
+  --m-paper: #f2f0e6;
+  --m-white: #ffffff;
+  --m-grey: #6f6b60;
+
+  --m-sans: 'Helvetica Neue', 'Segoe UI', Inter, 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  --m-mono: 'JetBrains Mono', 'Cascadia Code', 'SF Mono', Consolas, 'Courier New', monospace;
+}
+
+.m-page {
+  --gutter: clamp(20px, 5vw, 72px);
+  background: var(--m-white);
+  color: var(--m-ink);
+  font-family: var(--m-sans);
+  overflow-x: hidden;
+}
+
+.m-page *,
+.m-page *::before,
+.m-page *::after {
+  box-sizing: border-box;
+}
+
+.m-page h1,
+.m-page h2,
+.m-page h3,
+.m-page p,
+.m-page ul {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.m-page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* every section is delimited by the same 2px rule — the grid is the identity */
+.m-rule {
+  border-top: 2px solid var(--m-ink);
+}
+
+.m-kicker {
+  font-family: var(--m-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--m-grey);
+}
+
+.m-mono {
+  font-family: var(--m-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-page *,
+  .m-page *::before,
+  .m-page *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* the report is a data table, not prose — give it the room to be scanned.
+   VitePress caps `.container` / `.content` / `.content-container` from several
+   rules of equal specificity, so ordering decides the winner; `!important` makes
+   this deterministic instead of a cascade race. The page has only two headings,
+   so the outline is dropped in exchange for table width. */
+.report-page .VPDoc .aside {
+  display: none;
+}
+
+.report-page .VPDoc .container {
+  max-width: 1140px !important;
+}
+
+.report-page .VPDoc .content,
+.report-page .VPDoc .content-container {
+  max-width: 1040px !important;
+}

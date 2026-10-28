@@ -1,0 +1,741 @@
+{
+  "generatedAt": "2026-10-28",
+  "binaryBytes": 11335680,
+  "total": 91,
+  "counts": {
+    "microsoft": 76,
+    "uutils": 7,
+    "custom": 8
+  },
+  "totalLoc": 124741,
+  "commands": [
+    {
+      "name": "sed",
+      "category": "uutils",
+      "loc": 12331,
+      "files": 14,
+      "aliasOf": null,
+      "source": "deps/sed/src/sed"
+    },
+    {
+      "name": "find",
+      "category": "uutils",
+      "loc": 11190,
+      "files": 29,
+      "aliasOf": null,
+      "source": "deps/findutils/src/find"
+    },
+    {
+      "name": "ls",
+      "category": "microsoft",
+      "loc": 6215,
+      "files": 7,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/ls/src"
+    },
+    {
+      "name": "sort",
+      "category": "microsoft",
+      "loc": 6079,
+      "files": 13,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/sort/src"
+    },
+    {
+      "name": "diff",
+      "category": "uutils",
+      "loc": 5732,
+      "files": 8,
+      "aliasOf": null,
+      "source": "deps/diffutils/src"
+    },
+    {
+      "name": "cp",
+      "category": "microsoft",
+      "loc": 5200,
+      "files": 10,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/cp/src"
+    },
+    {
+      "name": "od",
+      "category": "microsoft",
+      "loc": 4263,
+      "files": 16,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/od/src"
+    },
+    {
+      "name": "split",
+      "category": "microsoft",
+      "loc": 3685,
+      "files": 10,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/split/src"
+    },
+    {
+      "name": "tail",
+      "category": "microsoft",
+      "loc": 3557,
+      "files": 13,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/tail/src"
+    },
+    {
+      "name": "df",
+      "category": "microsoft",
+      "loc": 3320,
+      "files": 9,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/df/src"
+    },
+    {
+      "name": "grep",
+      "category": "uutils",
+      "loc": 3249,
+      "files": 7,
+      "aliasOf": null,
+      "source": "deps/grep/src"
+    },
+    {
+      "name": "numfmt",
+      "category": "microsoft",
+      "loc": 3170,
+      "files": 8,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/numfmt/src"
+    },
+    {
+      "name": "date",
+      "category": "microsoft",
+      "loc": 2807,
+      "files": 4,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/date/src"
+    },
+    {
+      "name": "env",
+      "category": "microsoft",
+      "loc": 2613,
+      "files": 8,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/env/src"
+    },
+    {
+      "name": "dfree",
+      "category": "custom",
+      "loc": 2146,
+      "files": 2,
+      "aliasOf": null,
+      "source": "src/dfree"
+    },
+    {
+      "name": "mv",
+      "category": "microsoft",
+      "loc": 2037,
+      "files": 4,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/mv/src"
+    },
+    {
+      "name": "expr",
+      "category": "microsoft",
+      "loc": 1989,
+      "files": 5,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/expr/src"
+    },
+    {
+      "name": "csplit",
+      "category": "microsoft",
+      "loc": 1920,
+      "files": 6,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/csplit/src"
+    },
+    {
+      "name": "stat",
+      "category": "microsoft",
+      "loc": 1826,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/stat/src"
+    },
+    {
+      "name": "fmt",
+      "category": "microsoft",
+      "loc": 1815,
+      "files": 4,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/fmt/src"
+    },
+    {
+      "name": "test",
+      "category": "microsoft",
+      "loc": 1808,
+      "files": 8,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/test/src"
+    },
+    {
+      "name": "xargs",
+      "category": "uutils",
+      "loc": 1796,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/findutils/src/xargs"
+    },
+    {
+      "name": "cut",
+      "category": "microsoft",
+      "loc": 1766,
+      "files": 4,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/cut/src"
+    },
+    {
+      "name": "head",
+      "category": "microsoft",
+      "loc": 1766,
+      "files": 5,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/head/src"
+    },
+    {
+      "name": "pr",
+      "category": "microsoft",
+      "loc": 1716,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/pr/src"
+    },
+    {
+      "name": "rm",
+      "category": "microsoft",
+      "loc": 1698,
+      "files": 4,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/rm/src"
+    },
+    {
+      "name": "du",
+      "category": "microsoft",
+      "loc": 1646,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/du/src"
+    },
+    {
+      "name": "wc",
+      "category": "microsoft",
+      "loc": 1603,
+      "files": 7,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/wc/src"
+    },
+    {
+      "name": "tr",
+      "category": "microsoft",
+      "loc": 1338,
+      "files": 6,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/tr/src"
+    },
+    {
+      "name": "touch",
+      "category": "microsoft",
+      "loc": 1266,
+      "files": 6,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/touch/src"
+    },
+    {
+      "name": "cmp",
+      "category": "uutils",
+      "loc": 1215,
+      "files": 1,
+      "aliasOf": null,
+      "source": "deps/diffutils/src/cmp.rs"
+    },
+    {
+      "name": "join",
+      "category": "microsoft",
+      "loc": 1195,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/join/src"
+    },
+    {
+      "name": "wtop",
+      "category": "custom",
+      "loc": 1173,
+      "files": 1,
+      "aliasOf": null,
+      "source": "src/wtop.rs"
+    },
+    {
+      "name": "winfo",
+      "category": "custom",
+      "loc": 1136,
+      "files": 1,
+      "aliasOf": null,
+      "source": "src/winfo.rs"
+    },
+    {
+      "name": "ptx",
+      "category": "microsoft",
+      "loc": 1097,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/ptx/src"
+    },
+    {
+      "name": "cat",
+      "category": "microsoft",
+      "loc": 990,
+      "files": 5,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/cat/src"
+    },
+    {
+      "name": "base32",
+      "category": "microsoft",
+      "loc": 981,
+      "files": 3,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/base32/src"
+    },
+    {
+      "name": "seq",
+      "category": "microsoft",
+      "loc": 968,
+      "files": 6,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/seq/src"
+    },
+    {
+      "name": "shuf",
+      "category": "microsoft",
+      "loc": 905,
+      "files": 5,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/shuf/src"
+    },
+    {
+      "name": "tar",
+      "category": "uutils",
+      "loc": 904,
+      "files": 9,
+      "aliasOf": null,
+      "source": "deps/tar/src/uu"
+    },
+    {
+      "name": "uniq",
+      "category": "microsoft",
+      "loc": 871,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/uniq/src"
+    },
+    {
+      "name": "unexpand",
+      "category": "microsoft",
+      "loc": 813,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/unexpand/src"
+    },
+    {
+      "name": "fold",
+      "category": "microsoft",
+      "loc": 741,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/fold/src"
+    },
+    {
+      "name": "mktemp",
+      "category": "microsoft",
+      "loc": 690,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/mktemp/src"
+    },
+    {
+      "name": "nl",
+      "category": "microsoft",
+      "loc": 606,
+      "files": 3,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/nl/src"
+    },
+    {
+      "name": "truncate",
+      "category": "microsoft",
+      "loc": 594,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/truncate/src"
+    },
+    {
+      "name": "tac",
+      "category": "microsoft",
+      "loc": 569,
+      "files": 3,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/tac/src"
+    },
+    {
+      "name": "ln",
+      "category": "microsoft",
+      "loc": 525,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/ln/src"
+    },
+    {
+      "name": "was",
+      "category": "custom",
+      "loc": 469,
+      "files": 1,
+      "aliasOf": null,
+      "source": "src/was.rs"
+    },
+    {
+      "name": "tee",
+      "category": "microsoft",
+      "loc": 432,
+      "files": 3,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/tee/src"
+    },
+    {
+      "name": "comm",
+      "category": "microsoft",
+      "loc": 428,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/comm/src"
+    },
+    {
+      "name": "paste",
+      "category": "microsoft",
+      "loc": 415,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/paste/src"
+    },
+    {
+      "name": "tsort",
+      "category": "microsoft",
+      "loc": 405,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/tsort/src"
+    },
+    {
+      "name": "uptime",
+      "category": "microsoft",
+      "loc": 400,
+      "files": 5,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/uptime/src"
+    },
+    {
+      "name": "mkdir",
+      "category": "microsoft",
+      "loc": 388,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/mkdir/src"
+    },
+    {
+      "name": "realpath",
+      "category": "microsoft",
+      "loc": 347,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/realpath/src"
+    },
+    {
+      "name": "factor",
+      "category": "microsoft",
+      "loc": 270,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/factor/src"
+    },
+    {
+      "name": "echo",
+      "category": "microsoft",
+      "loc": 264,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/echo/src"
+    },
+    {
+      "name": "pathchk",
+      "category": "microsoft",
+      "loc": 264,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/pathchk/src"
+    },
+    {
+      "name": "free",
+      "category": "custom",
+      "loc": 260,
+      "files": 1,
+      "aliasOf": null,
+      "source": "src/free.rs"
+    },
+    {
+      "name": "dirname",
+      "category": "microsoft",
+      "loc": 227,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/dirname/src"
+    },
+    {
+      "name": "rmdir",
+      "category": "microsoft",
+      "loc": 215,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/rmdir/src"
+    },
+    {
+      "name": "sum",
+      "category": "microsoft",
+      "loc": 207,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/sum/src"
+    },
+    {
+      "name": "printf",
+      "category": "microsoft",
+      "loc": 204,
+      "files": 3,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/printf/src"
+    },
+    {
+      "name": "readlink",
+      "category": "microsoft",
+      "loc": 198,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/readlink/src"
+    },
+    {
+      "name": "yes",
+      "category": "microsoft",
+      "loc": 188,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/yes/src"
+    },
+    {
+      "name": "pwd",
+      "category": "microsoft",
+      "loc": 184,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/pwd/src"
+    },
+    {
+      "name": "hostname",
+      "category": "microsoft",
+      "loc": 175,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/hostname/src"
+    },
+    {
+      "name": "which",
+      "category": "custom",
+      "loc": 155,
+      "files": 2,
+      "aliasOf": null,
+      "source": "crates/uu_which/src"
+    },
+    {
+      "name": "basename",
+      "category": "microsoft",
+      "loc": 153,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/basename/src"
+    },
+    {
+      "name": "cksum",
+      "category": "microsoft",
+      "loc": 145,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/cksum/src"
+    },
+    {
+      "name": "nproc",
+      "category": "microsoft",
+      "loc": 142,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/nproc/src"
+    },
+    {
+      "name": "basenc",
+      "category": "microsoft",
+      "loc": 97,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/basenc/src"
+    },
+    {
+      "name": "printenv",
+      "category": "microsoft",
+      "loc": 82,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/printenv/src"
+    },
+    {
+      "name": "sleep",
+      "category": "microsoft",
+      "loc": 80,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/sleep/src"
+    },
+    {
+      "name": "true",
+      "category": "microsoft",
+      "loc": 67,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/true/src"
+    },
+    {
+      "name": "false",
+      "category": "microsoft",
+      "loc": 62,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/false/src"
+    },
+    {
+      "name": "link",
+      "category": "microsoft",
+      "loc": 59,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/link/src"
+    },
+    {
+      "name": "unlink",
+      "category": "microsoft",
+      "loc": 51,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/unlink/src"
+    },
+    {
+      "name": "arch",
+      "category": "microsoft",
+      "loc": 41,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/arch/src"
+    },
+    {
+      "name": "b2sum",
+      "category": "microsoft",
+      "loc": 35,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/b2sum/src"
+    },
+    {
+      "name": "base64",
+      "category": "microsoft",
+      "loc": 28,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/base64/src"
+    },
+    {
+      "name": "md5sum",
+      "category": "microsoft",
+      "loc": 14,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/md5sum/src"
+    },
+    {
+      "name": "sha1sum",
+      "category": "microsoft",
+      "loc": 14,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/sha1sum/src"
+    },
+    {
+      "name": "sha224sum",
+      "category": "microsoft",
+      "loc": 14,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/sha224sum/src"
+    },
+    {
+      "name": "sha256sum",
+      "category": "microsoft",
+      "loc": 14,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/sha256sum/src"
+    },
+    {
+      "name": "sha384sum",
+      "category": "microsoft",
+      "loc": 14,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/sha384sum/src"
+    },
+    {
+      "name": "sha512sum",
+      "category": "microsoft",
+      "loc": 14,
+      "files": 2,
+      "aliasOf": null,
+      "source": "deps/coreutils/src/uu/sha512sum/src"
+    },
+    {
+      "name": "[",
+      "category": "microsoft",
+      "loc": 0,
+      "files": 0,
+      "aliasOf": "test",
+      "source": "deps/coreutils/src/uu/test/src"
+    },
+    {
+      "name": "la",
+      "category": "custom",
+      "loc": 0,
+      "files": 0,
+      "aliasOf": "ls",
+      "source": "deps/coreutils/src/uu/ls/src"
+    },
+    {
+      "name": "unwas",
+      "category": "custom",
+      "loc": 0,
+      "files": 0,
+      "aliasOf": "was",
+      "source": "src/was.rs"
+    }
+  ]
+}
