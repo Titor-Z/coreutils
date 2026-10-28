@@ -44,6 +44,54 @@ impl Mismatch {
     }
 }
 
+/// A run of changed lines with no common line between them.
+struct ChangeBlock {
+    expected_start: usize,
+    actual_start: usize,
+    deletes: bool,
+    inserts: bool,
+}
+
+impl ChangeBlock {
+    fn new(mismatch: &Mismatch) -> Self {
+        Self {
+            expected_start: mismatch.expected.len(),
+            actual_start: mismatch.actual.len(),
+            deletes: false,
+            inserts: false,
+        }
+    }
+
+    /// Opens a block at the end of `mismatch` if none is open, and records
+    /// whether it deletes or inserts lines.
+    fn mark(block: &mut Option<Self>, mismatch: &Mismatch, deletes: bool, inserts: bool) {
+        let block = block.get_or_insert_with(|| Self::new(mismatch));
+        block.deletes |= deletes;
+        block.inserts |= inserts;
+    }
+
+    fn close(block: &mut Option<Self>, mismatch: &mut Mismatch) {
+        if let Some(block) = block.take() {
+            block.finish(mismatch);
+        }
+    }
+
+    /// Like GNU diff, a block that both deletes and inserts lines marks all of
+    /// them as changed (`!`), not only as many as pair up.
+    fn finish(self, mismatch: &mut Mismatch) {
+        if !(self.deletes && self.inserts) {
+            return;
+        }
+        let expected = mismatch.expected[self.expected_start..].iter_mut();
+        let actual = mismatch.actual[self.actual_start..].iter_mut();
+        for line in expected.chain(actual) {
+            if let DiffLine::Add(content) = line {
+                *line = DiffLine::Change(std::mem::take(content));
+            }
+        }
+    }
+}
+
 // Produces a diff between the expected output and actual output.
 fn make_diff(
     expected: &[u8],
@@ -54,7 +102,10 @@ fn make_diff(
     let mut line_number_expected = 1;
     let mut line_number_actual = 1;
     let mut context_queue: VecDeque<&[u8]> = VecDeque::with_capacity(context_size);
-    let mut lines_since_mismatch = context_size + 1;
+    // Like GNU diff, keep changes in one hunk while at most twice the context
+    // size of unchanged lines separates them.
+    let max_gap = 2 * context_size;
+    let mut lines_since_mismatch = max_gap + 1;
     let mut results = Vec::new();
     let mut mismatch = Mismatch::new(0, 0);
 
@@ -74,13 +125,12 @@ fn make_diff(
         actual_lines.pop();
     }
 
-    // Rust only allows allocations to grow to isize::MAX, and this is bigger than that.
-    let mut expected_lines_change_idx: usize = !0;
+    let mut block: Option<ChangeBlock> = None;
 
     for result in diff::slice(&expected_lines, &actual_lines) {
         match result {
             diff::Result::Left(str) => {
-                if lines_since_mismatch > context_size && lines_since_mismatch > 0 {
+                if lines_since_mismatch > max_gap {
                     results.push(mismatch);
                     mismatch = Mismatch::new(
                         line_number_expected - context_queue.len(),
@@ -93,7 +143,7 @@ fn make_diff(
                     mismatch.actual.push(DiffLine::Context(line.to_vec()));
                 }
 
-                expected_lines_change_idx = mismatch.expected.len();
+                ChangeBlock::mark(&mut block, &mismatch, true, false);
                 mismatch.expected.push(DiffLine::Add(str.to_vec()));
                 if line_number_expected > expected_lines_count {
                     mismatch.expected_missing_nl = true;
@@ -102,13 +152,12 @@ fn make_diff(
                 lines_since_mismatch = 0;
             }
             diff::Result::Right(str) => {
-                if lines_since_mismatch > context_size && lines_since_mismatch > 0 {
+                if lines_since_mismatch > max_gap {
                     results.push(mismatch);
                     mismatch = Mismatch::new(
                         line_number_expected - context_queue.len(),
                         line_number_actual - context_queue.len(),
                     );
-                    expected_lines_change_idx = !0;
                 }
 
                 while let Some(line) = context_queue.pop_front() {
@@ -116,16 +165,8 @@ fn make_diff(
                     mismatch.actual.push(DiffLine::Context(line.to_vec()));
                 }
 
-                if let Some(DiffLine::Add(content)) =
-                    mismatch.expected.get_mut(expected_lines_change_idx)
-                {
-                    let content = std::mem::take(content);
-                    mismatch.expected[expected_lines_change_idx] = DiffLine::Change(content);
-                    expected_lines_change_idx = expected_lines_change_idx.wrapping_sub(1); // if 0, becomes !0
-                    mismatch.actual.push(DiffLine::Change(str.to_vec()));
-                } else {
-                    mismatch.actual.push(DiffLine::Add(str.to_vec()));
-                }
+                ChangeBlock::mark(&mut block, &mismatch, false, true);
+                mismatch.actual.push(DiffLine::Add(str.to_vec()));
                 if line_number_actual > actual_lines_count {
                     mismatch.actual_missing_nl = true;
                 }
@@ -133,11 +174,11 @@ fn make_diff(
                 lines_since_mismatch = 0;
             }
             diff::Result::Both(str, _) => {
-                expected_lines_change_idx = !0;
                 // if one of them is missing a newline and the other isn't, then they don't actually match
                 if (line_number_actual > actual_lines_count)
                     && (line_number_expected > expected_lines_count)
                 {
+                    ChangeBlock::close(&mut block, &mut mismatch);
                     if context_queue.len() < context_size {
                         while let Some(line) = context_queue.pop_front() {
                             mismatch.expected.push(DiffLine::Context(line.to_vec()));
@@ -152,7 +193,7 @@ fn make_diff(
                     }
                     lines_since_mismatch = 0;
                 } else if line_number_actual > actual_lines_count {
-                    if lines_since_mismatch >= context_size && lines_since_mismatch > 0 {
+                    if lines_since_mismatch > max_gap {
                         results.push(mismatch);
                         mismatch = Mismatch::new(
                             line_number_expected - context_queue.len(),
@@ -163,12 +204,13 @@ fn make_diff(
                         mismatch.expected.push(DiffLine::Context(line.to_vec()));
                         mismatch.actual.push(DiffLine::Context(line.to_vec()));
                     }
+                    ChangeBlock::mark(&mut block, &mismatch, true, true);
                     mismatch.expected.push(DiffLine::Change(str.to_vec()));
                     mismatch.actual.push(DiffLine::Change(str.to_vec()));
                     mismatch.actual_missing_nl = true;
                     lines_since_mismatch = 0;
                 } else if line_number_expected > expected_lines_count {
-                    if lines_since_mismatch >= context_size && lines_since_mismatch > 0 {
+                    if lines_since_mismatch > max_gap {
                         results.push(mismatch);
                         mismatch = Mismatch::new(
                             line_number_expected - context_queue.len(),
@@ -179,11 +221,13 @@ fn make_diff(
                         mismatch.expected.push(DiffLine::Context(line.to_vec()));
                         mismatch.actual.push(DiffLine::Context(line.to_vec()));
                     }
+                    ChangeBlock::mark(&mut block, &mismatch, true, true);
                     mismatch.expected.push(DiffLine::Change(str.to_vec()));
                     mismatch.expected_missing_nl = true;
                     mismatch.actual.push(DiffLine::Change(str.to_vec()));
                     lines_since_mismatch = 0;
                 } else {
+                    ChangeBlock::close(&mut block, &mut mismatch);
                     debug_assert!(context_queue.len() <= context_size);
                     if context_queue.len() >= context_size {
                         let _ = context_queue.pop_front();
@@ -206,6 +250,9 @@ fn make_diff(
         }
     }
 
+    if let Some(block) = block {
+        block.finish(&mut mismatch);
+    }
     results.push(mismatch);
     results.remove(0);
 
@@ -799,5 +846,153 @@ mod tests {
             },
         );
         assert!(nodiff_brief.is_empty());
+    }
+
+    #[test]
+    fn test_change_block_lines_all_changed() {
+        use crate::assert_diff_eq;
+
+        let params = Params {
+            from: "foo".into(),
+            to: "bar".into(),
+            ..Default::default()
+        };
+
+        // Two lines replaced by one: both old lines are changed, not one deleted.
+        let from = ["a", "b", "c", "d", ""].join("\n");
+        let to = ["a", "x", "d", ""].join("\n");
+        let expected = [
+            "*** foo\tTIMESTAMP",
+            "--- bar\tTIMESTAMP",
+            "***************",
+            "*** 1,4 ****",
+            "  a",
+            "! b",
+            "! c",
+            "  d",
+            "--- 1,3 ----",
+            "  a",
+            "! x",
+            "  d",
+            "",
+        ]
+        .join("\n");
+        let output = diff(from.as_bytes(), to.as_bytes(), &params);
+        assert_diff_eq!(output, expected);
+
+        // One line replaced by three: all three new lines are changed.
+        let from = ["a", "b", ""].join("\n");
+        let to = ["a", "x", "y", "z", ""].join("\n");
+        let expected = [
+            "*** foo\tTIMESTAMP",
+            "--- bar\tTIMESTAMP",
+            "***************",
+            "*** 1,2 ****",
+            "  a",
+            "! b",
+            "--- 1,4 ----",
+            "  a",
+            "! x",
+            "! y",
+            "! z",
+            "",
+        ]
+        .join("\n");
+        let output = diff(from.as_bytes(), to.as_bytes(), &params);
+        assert_diff_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_hunk_merging() {
+        use crate::assert_diff_eq;
+
+        let params = Params {
+            from: "foo".into(),
+            to: "bar".into(),
+            context_count: 1,
+            ..Default::default()
+        };
+
+        // Changes separated by up to twice the context size share one hunk.
+        let from = ["a", "b", "c", "d", "e", "f", ""].join("\n");
+        let to = ["a", "B", "c", "d", "E", "f", ""].join("\n");
+        let expected = [
+            "*** foo\tTIMESTAMP",
+            "--- bar\tTIMESTAMP",
+            "***************",
+            "*** 1,6 ****",
+            "  a",
+            "! b",
+            "  c",
+            "  d",
+            "! e",
+            "  f",
+            "--- 1,6 ----",
+            "  a",
+            "! B",
+            "  c",
+            "  d",
+            "! E",
+            "  f",
+            "",
+        ]
+        .join("\n");
+        let output = diff(from.as_bytes(), to.as_bytes(), &params);
+        assert_diff_eq!(output, expected);
+
+        // One more unchanged line between them splits the hunk.
+        let from = ["a", "b", "c", "d", "e", "f", "g", ""].join("\n");
+        let to = ["a", "B", "c", "d", "e", "F", "g", ""].join("\n");
+        let expected = [
+            "*** foo\tTIMESTAMP",
+            "--- bar\tTIMESTAMP",
+            "***************",
+            "*** 1,3 ****",
+            "  a",
+            "! b",
+            "  c",
+            "--- 1,3 ----",
+            "  a",
+            "! B",
+            "  c",
+            "***************",
+            "*** 5,7 ****",
+            "  e",
+            "! f",
+            "  g",
+            "--- 5,7 ----",
+            "  e",
+            "! F",
+            "  g",
+            "",
+        ]
+        .join("\n");
+        let output = diff(from.as_bytes(), to.as_bytes(), &params);
+        assert_diff_eq!(output, expected);
+
+        // An insertion before a nearby change gives the two sides different
+        // line counts; the hunks must still be merged (issue #268).
+        let from = ["milk", "eggs", "bread", "butter", "apples", ""].join("\n");
+        let to = ["milk", "eggs", "yogurt", "bread", "honey", "apples", ""].join("\n");
+        let expected = [
+            "*** foo\tTIMESTAMP",
+            "--- bar\tTIMESTAMP",
+            "***************",
+            "*** 2,5 ****",
+            "  eggs",
+            "  bread",
+            "! butter",
+            "  apples",
+            "--- 2,6 ----",
+            "  eggs",
+            "+ yogurt",
+            "  bread",
+            "! honey",
+            "  apples",
+            "",
+        ]
+        .join("\n");
+        let output = diff(from.as_bytes(), to.as_bytes(), &params);
+        assert_diff_eq!(output, expected);
     }
 }

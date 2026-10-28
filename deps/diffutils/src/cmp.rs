@@ -71,12 +71,11 @@ fn is_stdout_dev_null() -> bool {
 }
 
 pub fn parse_params<I: Iterator<Item = OsString>>(mut opts: Peekable<I>) -> Result<Params, String> {
-    let Some(executable) = opts.next() else {
-        return Err("Usage: <exe> <from> <to>".to_string());
-    };
+    let executable = opts.next().ok_or("Usage: <exe> <from> <to>".to_string())?;
     let executable_str = executable.to_string_lossy().to_string();
 
-    let parse_skip = |param: &str, skip_desc: &str| -> Result<SkipU64, String> {
+    // Sizes for --ignore-initial and --bytes, with the same unit suffixes.
+    let parse_size = |param: &str, option: &str, desc: &str| -> Result<SkipU64, String> {
         let suffix_start = param
             .find(|b: char| !b.is_ascii_digit())
             .unwrap_or(param.len());
@@ -85,7 +84,7 @@ pub fn parse_params<I: Iterator<Item = OsString>>(mut opts: Peekable<I>) -> Resu
             Err(e) if *e.kind() == std::num::IntErrorKind::PosOverflow => SkipU64::MAX,
             Err(_) => {
                 return Err(format!(
-                    "{executable_str}: invalid --ignore-initial value '{skip_desc}'"
+                    "{executable_str}: invalid --{option} value '{desc}'"
                 ))
             }
         };
@@ -113,7 +112,7 @@ pub fn parse_params<I: Iterator<Item = OsString>>(mut opts: Peekable<I>) -> Resu
                 "Y" => SkipU64::MAX,  // 1_208_925_819_614_629_174_706_176,
                 _ => {
                     return Err(format!(
-                        "{executable_str}: invalid --ignore-initial value '{skip_desc}'"
+                        "{executable_str}: invalid --{option} value '{desc}'"
                     ));
                 }
             };
@@ -174,17 +173,7 @@ pub fn parse_params<I: Iterator<Item = OsString>>(mut opts: Peekable<I>) -> Resu
                 let (_, arg) = param_str.split_once('=').unwrap();
                 arg.to_string()
             };
-            let max_bytes = match max_bytes.parse::<BytesLimitU64>() {
-                Ok(num) => num,
-                // TODO limit to MAX is dangerous, this should become an error like in GNU cmp.
-                Err(e) if *e.kind() == std::num::IntErrorKind::PosOverflow => BytesLimitU64::MAX,
-                Err(_) => {
-                    return Err(format!(
-                        "{executable_str}: invalid --bytes value '{max_bytes}'"
-                    ))
-                }
-            };
-            params.max_bytes = Some(max_bytes);
+            params.max_bytes = Some(parse_size(&max_bytes, "bytes", &max_bytes)?);
             continue;
         }
         if param == "-i" || param_str.starts_with("--ignore-initial=") {
@@ -199,11 +188,11 @@ pub fn parse_params<I: Iterator<Item = OsString>>(mut opts: Peekable<I>) -> Resu
             };
             let (skip_a, skip_b) = if let Some((skip_a, skip_b)) = skip_desc.split_once(':') {
                 (
-                    parse_skip(skip_a, &skip_desc)?,
-                    parse_skip(skip_b, &skip_desc)?,
+                    parse_size(skip_a, "ignore-initial", &skip_desc)?,
+                    parse_size(skip_b, "ignore-initial", &skip_desc)?,
                 )
             } else {
-                let skip = parse_skip(&skip_desc, &skip_desc)?;
+                let skip = parse_size(&skip_desc, "ignore-initial", &skip_desc)?;
                 (skip, skip)
             };
             params.skip_a = Some(skip_a);
@@ -226,9 +215,9 @@ pub fn parse_params<I: Iterator<Item = OsString>>(mut opts: Peekable<I>) -> Resu
         } else if to.is_none() {
             to = Some(param);
         } else if skip_pos1.is_none() {
-            skip_pos1 = Some(parse_skip(&param_str, &param_str)?);
+            skip_pos1 = Some(parse_size(&param_str, "ignore-initial", &param_str)?);
         } else if skip_pos2.is_none() {
-            skip_pos2 = Some(parse_skip(&param_str, &param_str)?);
+            skip_pos2 = Some(parse_size(&param_str, "ignore-initial", &param_str)?);
         } else {
             return Err(usage_string(&executable_str));
         }
@@ -270,7 +259,7 @@ pub fn parse_params<I: Iterator<Item = OsString>>(mut opts: Peekable<I>) -> Resu
             params.skip_a = skip_pos1;
         } else if let Some(param) = opts.next() {
             let param_str = param.to_string_lossy().to_string();
-            params.skip_a = Some(parse_skip(&param_str, &param_str)?);
+            params.skip_a = Some(parse_size(&param_str, "ignore-initial", &param_str)?);
         }
     };
     if params.skip_b.is_none() {
@@ -278,7 +267,7 @@ pub fn parse_params<I: Iterator<Item = OsString>>(mut opts: Peekable<I>) -> Resu
             params.skip_b = skip_pos2;
         } else if let Some(param) = opts.next() {
             let param_str = param.to_string_lossy().to_string();
-            params.skip_b = Some(parse_skip(&param_str, &param_str)?);
+            params.skip_b = Some(parse_size(&param_str, "ignore-initial", &param_str)?);
         }
     }
 
@@ -293,27 +282,15 @@ fn prepare_reader(
     let mut reader: Box<dyn BufRead> = if path == "-" {
         Box::new(BufReader::new(io::stdin()))
     } else {
-        match fs::File::open(path) {
-            Ok(file) => Box::new(BufReader::new(file)),
-            Err(e) => {
-                return Err(format_failure_to_read_input_file(
-                    &params.executable,
-                    path,
-                    &e,
-                ));
-            }
-        }
+        let file = fs::File::open(path)
+            .map_err(|e| format_failure_to_read_input_file(&params.executable, path, &e))?;
+        Box::new(BufReader::new(file))
     };
 
     if let Some(skip) = skip {
         // cast as u64 must remain, because value of IgnInit data type could be changed.
-        if let Err(e) = io::copy(&mut reader.by_ref().take(*skip), &mut io::sink()) {
-            return Err(format_failure_to_read_input_file(
-                &params.executable,
-                path,
-                &e,
-            ));
-        }
+        io::copy(&mut reader.by_ref().take(*skip), &mut io::sink())
+            .map_err(|e| format_failure_to_read_input_file(&params.executable, path, &e))?;
     }
 
     Ok(reader)
@@ -360,27 +337,13 @@ pub fn cmp(params: &Params) -> Result<Cmp, String> {
     let mut compare = Cmp::Equal;
     loop {
         // Fill up our buffers.
-        let from_buf = match from.fill_buf() {
-            Ok(buf) => buf,
-            Err(e) => {
-                return Err(format_failure_to_read_input_file(
-                    &params.executable,
-                    &params.from,
-                    &e,
-                ));
-            }
-        };
+        let from_buf = from
+            .fill_buf()
+            .map_err(|e| format_failure_to_read_input_file(&params.executable, &params.from, &e))?;
 
-        let to_buf = match to.fill_buf() {
-            Ok(buf) => buf,
-            Err(e) => {
-                return Err(format_failure_to_read_input_file(
-                    &params.executable,
-                    &params.to,
-                    &e,
-                ));
-            }
-        };
+        let to_buf = to
+            .fill_buf()
+            .map_err(|e| format_failure_to_read_input_file(&params.executable, &params.to, &e))?;
 
         // Check for EOF conditions.
         if from_buf.is_empty() && to_buf.is_empty() {
@@ -505,7 +468,7 @@ pub fn main<I: Iterator<Item = OsString>>(opts: Peekable<I>) -> i32 {
 
 #[inline]
 fn format_octal(byte: u8, buf: &mut [u8; 3]) -> &str {
-    *buf = [b' ', b' ', b'0'];
+    *buf = *b"  0";
 
     let mut num = byte;
     let mut idx = 2; // Start at the last position in the buffer
@@ -635,7 +598,7 @@ fn format_verbose_difference(
     } else {
         // "{:>width$} {:>3o} {:>3o}"
         let at_byte_str = at_byte_buf.format(at_byte);
-        let at_byte_padding = offset_width - at_byte_str.len();
+        let at_byte_padding = offset_width.saturating_sub(at_byte_str.len());
 
         for _ in 0..at_byte_padding {
             output.push(b' ')
@@ -734,15 +697,14 @@ fn report_difference(
     };
     print!(
         "{} {} differ: {term} {}, line {}",
-        &params.from.to_string_lossy(),
-        &params.to.to_string_lossy(),
+        params.from.to_string_lossy(),
+        params.to.to_string_lossy(),
         at_byte,
         at_line
     );
     if params.print_bytes {
-        let char_width = if to_byte >= 0x7F { 2 } else { 1 };
         print!(
-            " is {:>3o} {:char_width$} {:>3o} {:char_width$}",
+            " is {:>3o} {} {:>3o} {}",
             from_byte,
             format_visible_byte(from_byte),
             to_byte,
@@ -1013,12 +975,33 @@ mod tests {
             )
         );
 
+        // Same unit suffixes as --ignore-initial
+        for (args, bytes) in [
+            (&["-n", "1K"][..], 1_024),
+            (&["--bytes=1kB"][..], 1_000),
+            (&["--bytes=2M"][..], 2_097_152),
+        ] {
+            let mut opts = vec![os("cmp")];
+            opts.extend(args.iter().map(|arg| os(arg)));
+            opts.extend([os("foo"), os("bar")]);
+            assert_eq!(
+                Ok(Params {
+                    executable: os("cmp"),
+                    from: os("foo"),
+                    to: os("bar"),
+                    max_bytes: Some(bytes),
+                    ..Default::default()
+                }),
+                parse_params(opts.into_iter().peekable()),
+                "{args:?}"
+            );
+        }
+
         // Failure case
-        // TODO This is actually fine in GNU cmp. --bytes does not have a unit parser yet.
         assert_eq!(
-            Err("cmp: invalid --bytes value '1K'".to_string()),
+            Err("cmp: invalid --bytes value '1x'".to_string()),
             parse_params(
-                [os("cmp"), os("--bytes=1K"), os("foo"), os("bar")]
+                [os("cmp"), os("--bytes=1x"), os("foo"), os("bar")]
                     .iter()
                     .cloned()
                     .peekable()

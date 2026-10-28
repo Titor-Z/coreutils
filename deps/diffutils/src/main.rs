@@ -52,6 +52,10 @@ fn second_arg_error(name: &OsStr) -> ! {
     std::process::exit(0);
 }
 
+fn exit_code(code: i32) -> ExitCode {
+    ExitCode::from(u8::try_from(code).unwrap_or(2))
+}
+
 fn main() -> ExitCode {
     let mut args = std::env::args_os().peekable();
 
@@ -70,8 +74,8 @@ fn main() -> ExitCode {
     };
 
     match util_name.as_encoded_bytes() {
-        name if name.ends_with(b"diff") => diff::main(args),
-        name if name.ends_with(b"cmp") => cmp::main(args),
+        name if name.ends_with(b"diff") => exit_code(diff::main(args)),
+        name if name.ends_with(b"cmp") => exit_code(cmp::main(args)),
         name => {
             use std::io::{stderr, Write as _};
             let _ = writeln!(
