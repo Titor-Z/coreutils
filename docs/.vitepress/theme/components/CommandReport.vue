@@ -179,7 +179,9 @@ const filteredFiles = computed(() => rows.value.reduce((s, c) => s + c.files, 0)
         <p class="r-sub">下列命令与另一命令共享同一份实现，不单独计入行数。</p>
         <ul>
           <li v-for="a in aliasRows" :key="a.name">
-            <code>{{ a.name }}</code> ← 同 <code>{{ a.aliasOf }}</code>
+            <code class="a-name">{{ a.name }}</code>
+            <span class="a-arrow">← 同</span>
+            <code class="a-target">{{ a.aliasOf }}</code>
           </li>
         </ul>
       </div>
@@ -460,16 +462,31 @@ const filteredFiles = computed(() => rows.value.reduce((s, c) => s + c.files, 0)
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
+  display: grid;
+  grid-template-columns: max-content max-content max-content;
+  gap: 6px 14px;
+  align-items: center;
+  justify-items: start;
   font-family: var(--mono);
   font-size: 12px;
+}
+
+.r-alias li {
+  display: contents;
 }
 
 .r-alias code {
   background: var(--paper);
   padding: 1px 5px;
+}
+
+.r-alias .a-name {
+  font-weight: 600;
+}
+
+.r-alias .a-arrow {
+  color: var(--grey);
+  white-space: nowrap;
 }
 
 .r-foot {
