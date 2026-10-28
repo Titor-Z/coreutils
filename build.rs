@@ -93,6 +93,8 @@ fn generate_uutils_map() {
 
     entries.push(("dfree".into(), "(dfree_uumain, dfree_uu_app)".into()));
     entries.push(("free".into(), "(free_uumain, free_uu_app)".into()));
+    entries.push(("unwas".into(), "(unwas_uumain, unwas_uu_app)".into()));
+    entries.push(("was".into(), "(was_uumain, was_uu_app)".into()));
     entries.push(("winfo".into(), "(winfo_uumain, winfo_uu_app)".into()));
     entries.push(("wtop".into(), "(wtop_uumain, wtop_uu_app)".into()));
 

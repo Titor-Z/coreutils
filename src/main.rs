@@ -8,6 +8,7 @@
 mod dfree;
 mod free;
 mod nthelpers;
+mod was;
 mod wtop;
 mod winfo;
 
@@ -262,7 +263,7 @@ fn get_canonical_util_name(util_name: &str) -> &str {
 fn command_category(name: &str) -> &'static str {
     match name {
         "cmp" | "diff" | "find" | "grep" | "sed" | "tar" | "xargs" => "uutils",
-        "dfree" | "free" | "la" | "which" | "winfo" | "wtop" => "custom",
+        "dfree" | "free" | "la" | "unwas" | "was" | "which" | "winfo" | "wtop" => "custom",
         _ => "microsoft",
     }
 }
@@ -414,8 +415,25 @@ fn winfo_uu_app() -> Command {
 fn wtop_uumain<T: Args>(args: T) -> i32 {
     wtop::uumain(args.into_iter())
 }
-
 fn wtop_uu_app() -> Command {
     wtop::uumain([OsString::from("wtop"), OsString::from("--help")].into_iter());
+    unreachable!()
+}
+
+fn was_uumain<T: Args>(args: T) -> i32 {
+    was::was_uumain(args.into_iter())
+}
+
+fn was_uu_app() -> Command {
+    was::was_uumain([OsString::from("was"), OsString::from("--help")].into_iter());
+    unreachable!()
+}
+
+fn unwas_uumain<T: Args>(args: T) -> i32 {
+    was::unwas_uumain(args.into_iter())
+}
+
+fn unwas_uu_app() -> Command {
+    was::unwas_uumain([OsString::from("unwas"), OsString::from("--help")].into_iter());
     unreachable!()
 }

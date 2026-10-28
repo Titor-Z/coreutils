@@ -27,7 +27,7 @@ Fork of [microsoft/coreutils](https://github.com/microsoft/coreutils) 基础上�
 以及 [uutils/tar](https://github.com/uutils/tar)，打包成一个多调用二进制文件。在 Windows 上原生运行，
 无需 WSL / Cygwin / MSYS2。
 
-共 **89 个命令**（76 `[microsoft]` + 7 `[uutils]` + 6 `[custom]`），覆盖日常 Linux 命令行的绝大部分需求。
+共 **91 个命令**（76 `[microsoft]` + 7 `[uutils]` + 8 `[custom]`），覆盖日常 Linux 命令行的绝大部分需求。
 
 <br/>
 
@@ -72,6 +72,8 @@ dfree
 | `tar` | [uutils/tar](https://github.com/uutils/tar) | 归档工具，支持 create / list / extract |
 | `dfree` | 自定义 | TUI 磁盘分析器（ratatui），支持磁盘分组、文件分类统计、大文件浏览、toml 可配置 |
 | `free` | 自定义 | 显示物理内存与交换区使用情况，兼容 GNU free 的 `-b/-k/-m/-g/-h/--si/-t` |
+| `was` | 自定义 | PowerShell 别名管理，在 `$PROFILE` 的标记区内增删改别名 |
+| `unwas` | 自定义 | 删除 `was` 管理的别名 |
 | `winfo` | 自定义 | 系统信息显示（neofetch-like），显示 OS、BIOS、CPU、内存、NIC 等信息 |
 | `wtop` | 自定义 | 进程监视器 TUI（ratatui），实时显示进程列表、CPU/内存占用 |
 | `which` | 自定义 | PATH 查找，支持 PATHEXT 和 `-a` 参数 |
@@ -104,8 +106,30 @@ free --si -h             # 1000 进制单位
 纯 Win32 API（`GlobalMemoryStatusEx`）实现，不需要 `/proc`。Windows 没有独立的 swap 分区，
 `Swap` 列取「已提交页面文件 − 物理内存」；`shared` 与 `buff/cache` 无对应概念，恒为 0。
 
-### winfo（系统信息）
+### was / unwas（PowerShell 别名）
 
+像 Linux 的 `alias` 一样管理 PowerShell 别名，写入 `$PROFILE` 中一段带标记的区域：
+
+```powershell
+was                       # 列出全部别名
+was gs                    # 查看单个别名
+was gs=git\ status         # 创建或更新（含空格的命令需转义）
+was ll=ls\ -la             # 参数一并存下
+unwas gs                  # 删除
+```
+
+写入 `Microsoft.PowerShell_profile.ps1` 的形式：
+
+```powershell
+# >>> was managed <<<
+function global:ll { & ls -la $args }
+# <<< was managed >>>
+```
+
+标记区域之外的内容原样保留，可与已有 `$PROFILE` 共存；定义以 `global:` 函数实现，因此可透传参数。
+目录不存在时会自动创建。
+
+### winfo（系统信息）
 类似 neofetch 的系统信息展示，显示：
 - OS 版本、内核、运行时间
 - BIOS 厂商/版本/日期
