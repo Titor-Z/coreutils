@@ -27,7 +27,7 @@ Fork of [microsoft/coreutils](https://github.com/microsoft/coreutils) 基础上�
 以及 [uutils/tar](https://github.com/uutils/tar)，打包成一个多调用二进制文件。在 Windows 上原生运行，
 无需 WSL / Cygwin / MSYS2。
 
-共 **88 个命令**（76 `[microsoft]` + 7 `[uutils]` + 5 `[custom]`），覆盖日常 Linux 命令行的绝大部分需求。
+共 **89 个命令**（76 `[microsoft]` + 7 `[uutils]` + 6 `[custom]`），覆盖日常 Linux 命令行的绝大部分需求。
 
 <br/>
 
@@ -64,10 +64,11 @@ dfree
 | Command | Source | Description |
 | ------- | ------ | ----------- |
 | `find` | [uutils/findutils](https://github.com/uutils/findutils) | 文件搜索，支持 `-name`、`-type`、`-exec` 等标准功能 |
+| `xargs` | [uutils/findutils](https://github.com/uutils/findutils) | 从标准输入构建并执行命令行 |
 | `grep` | [uutils/grep](https://github.com/uutils/grep) | 文本搜索，支持 `-r`、`-i`、`-E`（ERE）、`-v` 等 |
 | `sed` | [uutils/sed](https://github.com/uutils/sed) | 流编辑器，支持 `s/pattern/replace/`、`-n`、地址范围等 |
-| `diff` | [uutils/diffutils](https://github.com/uutils/diffutils) | 文件差异比较，支持 unified diff (`-u`) |
-| `cmp` | [uutils/diffutils](https://github.com/uutils/diffutils) | 字节级文件比较 |
+| `diff` | [uutils/diffutils](https://github.com/uutils/diffutils) | 文件差异比较，支持 unified (`-u`) / context (`-c`) / ed (`-e`) / side-by-side (`-y`) 格式 |
+| `cmp` | [uutils/diffutils](https://github.com/uutils/diffutils) | 字节级文件比较，支持 `-l`、`-s`、`-n`（含 `1K`/`2M` 单位后缀） |
 | `tar` | [uutils/tar](https://github.com/uutils/tar) | 归档工具，支持 create / list / extract |
 | `dfree` | 自定义 | TUI 磁盘分析器（ratatui），支持磁盘分组、文件分类统计、大文件浏览、toml 可配置 |
 | `free` | 自定义 | 显示物理内存与交换区使用情况，兼容 GNU free 的 `-b/-k/-m/-g/-h/--si/-t` |
@@ -88,6 +89,20 @@ dfree
 dfree                    # 启动 TUI
 dfree --help             # 查看所有选项
 ```
+
+### free（内存用量）
+
+显示物理内存与交换区使用情况，输出对齐 GNU `free`：
+
+```bash
+free                     # 默认 KiB
+free -h                  # 人类可读（如 3.9GiB）
+free -m -t               # MiB + 总计行
+free --si -h             # 1000 进制单位
+```
+
+纯 Win32 API（`GlobalMemoryStatusEx`）实现，不需要 `/proc`。Windows 没有独立的 swap 分区，
+`Swap` 列取「已提交页面文件 − 物理内存」；`shared` 与 `buff/cache` 无对应概念，恒为 0。
 
 ### winfo（系统信息）
 
@@ -123,16 +138,17 @@ which -a node            # 列出所有匹配
 
 ## Build
 
-需要 Rust 工具链（nightly）和 MinGW-w64 GCC（用于编译 `sort` 命令的 C 代码）。
+需要 Rust 工具链（stable 即可）和 MinGW-w64 GCC（用于编译 `sort` 命令的 C 代码）。
 
 ```powershell
 # 子模块初始化（coreutils、findutils、grep、sed）
 git submodule update --init --recursive
 
-# 编译（需要 RUSTC_BOOTSTRAP=1 环境变量）
-$env:RUSTC_BOOTSTRAP=1
+# 编译
 cargo build --release
 ```
+
+> `diffutils` 与 `tar` 是直接 vendored 进仓库的源码目录（非 submodule），`git clone` 即已包含。
 
 编译产物在 `target/release/coreutils.exe`。
 
