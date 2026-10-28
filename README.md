@@ -70,6 +70,7 @@ dfree
 | `cmp` | [uutils/diffutils](https://github.com/uutils/diffutils) | 字节级文件比较 |
 | `tar` | [uutils/tar](https://github.com/uutils/tar) | 归档工具，支持 create / list / extract |
 | `dfree` | 自定义 | TUI 磁盘分析器（ratatui），支持磁盘分组、文件分类统计、大文件浏览、toml 可配置 |
+| `free` | 自定义 | 显示物理内存与交换区使用情况，兼容 GNU free 的 `-b/-k/-m/-g/-h/--si/-t` |
 | `winfo` | 自定义 | 系统信息显示（neofetch-like），显示 OS、BIOS、CPU、内存、NIC 等信息 |
 | `wtop` | 自定义 | 进程监视器 TUI（ratatui），实时显示进程列表、CPU/内存占用 |
 | `which` | 自定义 | PATH 查找，支持 PATHEXT 和 `-a` 参数 |

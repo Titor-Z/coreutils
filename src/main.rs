@@ -6,6 +6,7 @@
 // under the uutils MIT License for upstream incorporation. See NOTICE.md.
 
 mod dfree;
+mod free;
 mod nthelpers;
 mod wtop;
 mod winfo;
@@ -261,7 +262,7 @@ fn get_canonical_util_name(util_name: &str) -> &str {
 fn command_category(name: &str) -> &'static str {
     match name {
         "cmp" | "diff" | "find" | "grep" | "sed" | "tar" | "xargs" => "uutils",
-        "dfree" | "la" | "which" | "winfo" | "wtop" => "custom",
+        "dfree" | "free" | "la" | "which" | "winfo" | "wtop" => "custom",
         _ => "microsoft",
     }
 }
@@ -389,6 +390,15 @@ fn dfree_uumain<T: Args>(args: T) -> i32 {
 
 fn dfree_uu_app() -> Command {
     dfree::uumain([OsString::from("dfree"), OsString::from("--help")].into_iter());
+    unreachable!()
+}
+
+fn free_uumain<T: Args>(args: T) -> i32 {
+    free::uumain(args.into_iter())
+}
+
+fn free_uu_app() -> Command {
+    free::uumain([OsString::from("free"), OsString::from("--help")].into_iter());
     unreachable!()
 }
 
