@@ -9,10 +9,11 @@
 
   --m-sans: 'Helvetica Neue', 'Segoe UI', Inter, 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
   --m-mono: 'JetBrains Mono', 'Cascadia Code', 'SF Mono', Consolas, 'Courier New', monospace;
+
+  --gutter: clamp(20px, 5vw, 72px);
 }
 
 .m-page {
-  --gutter: clamp(20px, 5vw, 72px);
   background: var(--m-white);
   color: var(--m-ink);
   font-family: var(--m-sans);
@@ -68,20 +69,4 @@
   }
 }
 
-/* the report is a data table, not prose — give it the room to be scanned.
-   VitePress caps `.container` / `.content` / `.content-container` from several
-   rules of equal specificity, so ordering decides the winner; `!important` makes
-   this deterministic instead of a cascade race. The page has only two headings,
-   so the outline is dropped in exchange for table width. */
-.report-page .VPDoc .aside {
-  display: none;
-}
-
-.report-page .VPDoc .container {
-  max-width: 1140px !important;
-}
-
-.report-page .VPDoc .content,
-.report-page .VPDoc .content-container {
-  max-width: 1040px !important;
-}
+/* the report is a data table, not prose — the shell gives it a wider column */

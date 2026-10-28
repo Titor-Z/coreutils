@@ -1,6 +1,8 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { withBase } from 'vitepress'
 import raw from '../../../data/commands.json'
+import MondrianBar from './MondrianBar.vue'
 import MondrianTreemap from './MondrianTreemap.vue'
 
 const REPO = 'https://github.com/Titor-Z/coreutils'
@@ -64,21 +66,7 @@ const gaps = [
 
 <template>
   <div class="m-page">
-    <header class="m-bar">
-      <a class="m-brand" href="#top">
-        <span class="m-brand-mark" aria-hidden="true">
-          <i class="r" /><i class="b" /><i class="y" />
-        </span>
-        <span class="m-brand-name">coreutils<em>.exe</em></span>
-      </a>
-      <nav class="m-nav">
-        <a href="#composition">构成</a>
-        <a href="#install">安装</a>
-        <a href="#sources">来源</a>
-        <a href="#gaps">已知缺项</a>
-        <a :href="REPO" target="_blank" rel="noreferrer">GitHub ↗</a>
-      </nav>
-    </header>
+    <MondrianBar />
 
     <section id="top" class="m-hero">
       <div class="m-hero-copy">
@@ -248,7 +236,7 @@ const gaps = [
       <div class="m-foot-links">
         <a :href="REPO" target="_blank" rel="noreferrer">GitHub</a>
         <a :href="`${REPO}/releases`" target="_blank" rel="noreferrer">Releases</a>
-        <a :href="`${REPO}/blob/main/README.md`" target="_blank" rel="noreferrer">README</a>
+        <a :href="withBase('/commands')">命令报表</a>
       </div>
       <div class="m-foot-meta m-mono">数据生成于 {{ raw.generatedAt }}</div>
     </footer>
@@ -256,47 +244,6 @@ const gaps = [
 </template>
 
 <style scoped>
-.m-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 0 var(--gutter);
-  height: 60px;
-  border-bottom: 2px solid var(--m-ink);
-  position: sticky;
-  top: 0;
-  background: var(--m-white);
-  z-index: 30;
-}
-
-.m-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--m-mono);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.m-brand-name em {
-  font-style: normal;
-  color: var(--m-grey);
-  font-weight: 500;
-}
-
-.m-brand-mark {
-  display: grid;
-  grid-template-columns: 6px 6px 6px;
-  gap: 2px;
-  height: 14px;
-}
-
-.m-brand-mark i {
-  display: block;
-  height: 100%;
-}
-
 .m-brand-mark.small {
   height: 11px;
   grid-template-columns: 5px 5px 5px;
@@ -305,16 +252,6 @@ const gaps = [
 .m-brand-mark .r { background: var(--m-red); }
 .m-brand-mark .b { background: var(--m-blue); }
 .m-brand-mark .y { background: var(--m-yellow); }
-
-.m-nav {
-  display: flex;
-  gap: clamp(12px, 2vw, 30px);
-  font-size: 13px;
-  font-family: var(--m-mono);
-  color: var(--m-ink);
-}
-
-.m-nav a:hover { color: var(--m-red); }
 
 /* ---------- hero ---------- */
 
@@ -770,9 +707,6 @@ const gaps = [
 @media (max-width: 900px) {
   .m-hero {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .m-nav a:not(:last-child) {
-    display: none;
   }
 }
 </style>

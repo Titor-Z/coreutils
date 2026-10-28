@@ -1,5 +1,4 @@
 ---
-pageClass: report-page
 ---
 
 # 命令报表
